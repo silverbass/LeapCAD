@@ -54,7 +54,7 @@ vector<string> melCmd(const cmdType & cmd, const pVec & v){
 		melLine.append(to_string(k*v.z));
 		melLine.append(";");
 		melLines.push_back(melLine);
-		//should probably clear melLine lol;
+		melLine = "";
 		return melLines;
 	}
 	else if(cmd.t==2){
@@ -66,7 +66,7 @@ vector<string> melCmd(const cmdType & cmd, const pVec & v){
 		melLine.append(to_string(k*v.z));
 		melLine.append("deg;");
 		melLines.push_back(melLine);
-		//
+		melLine = "";
 		return melLines
 	}
 	else if(cmd.t==3){
@@ -78,7 +78,7 @@ vector<string> melCmd(const cmdType & cmd, const pVec & v){
 		melLine.append(to_string(k*v.z));
 		melLine.append(";");
 		melLines.push_back(melLine);
-		//
+		melLine = "";
 		return melLines;
 	}
 	cerr<<"cmd not caught: "<<cmd.t<<endl;
