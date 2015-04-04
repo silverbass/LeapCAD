@@ -87,7 +87,7 @@ vector<string> melCmd(const cmdType & cmd, const pVec & v){
     return melLines;
 }
 
-void write(vector<string> melLines)
+/*void write(vector<string> melLines)
 {
     ofstream m_file;
     if (!melLines.empty())
@@ -103,13 +103,17 @@ void write(vector<string> melLines)
         m_file << "";
         m_file.close();
     }
-}
+}*/
 
 int main()
 {
-    vector<string> n;
+	ofstream m_file;
+	m_file.open("mel.script.mel");
+	vector<string> n;
     n.push_back("move -r 1 1 1;");
-    write(n);
+	for(vector<string>::iterator it = n.begin(); it !=n.end(); ++n){
+		m_file<<*it<<endl;
+	}
     return 0;
 }
 
