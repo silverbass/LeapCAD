@@ -114,6 +114,7 @@ int main()
 	for(vector<string>::iterator it = n.begin(); it !=n.end(); ++n){
 		m_file<<*it<<endl;
 	}
+	m_file.close();
     return 0;
 }
 
