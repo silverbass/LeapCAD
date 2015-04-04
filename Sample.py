@@ -1,4 +1,4 @@
-import Leap, sys, thread, time
+import Leap, sys, thread, time, math
 from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
 
 
@@ -35,6 +35,7 @@ class SampleListener(Leap.Listener):
     def on_frame(self, controller):
         # Get the most recent frame and report some basic information
         frame = controller.frame()
+        swept_angles = []
 
         if len(frame.hands) == 1:
             hand = frame.hands[0]
@@ -69,25 +70,43 @@ class SampleListener(Leap.Listener):
                     if circle.state != Leap.Gesture.STATE_START:
                         previous_update = CircleGesture(controller.frame(1).gesture(circle.id))
                         swept_angle =  (circle.progress - previous_update.progress) * 2 * Leap.PI
+                    swept_angles = swept_angles + [swept_angle]
 
+                # if gesture.type == Leap.Gesture.TYPE_SWIPE:
+                #     swipe = SwipeGesture(gesture)
+                #     print "  Swipe id: %d, state: %s, position: %s, direction: %s, speed: %f" % (
+                #             gesture.id, self.state_names[gesture.state],
+                #             swipe.position, swipe.direction, swipe.speed)
 
-                if gesture.type == Leap.Gesture.TYPE_SWIPE:
-                    swipe = SwipeGesture(gesture)
-                    print "  Swipe id: %d, state: %s, position: %s, direction: %s, speed: %f" % (
-                            gesture.id, self.state_names[gesture.state],
-                            swipe.position, swipe.direction, swipe.speed)
-
-                if gesture.type == Leap.Gesture.TYPE_KEY_TAP:
-                    keytap = KeyTapGesture(gesture)
-                    print "  Key Tap id: %d, %s, position: %s, direction: %s" % (
-                            gesture.id, self.state_names[gesture.state],
-                            keytap.position, keytap.direction )
+                # if gesture.type == Leap.Gesture.TYPE_KEY_TAP:
+                #     keytap = KeyTapGesture(gesture)
+                #     print "  Key Tap id: %d, %s, position: %s, direction: %s" % (
+                #             gesture.id, self.state_names[gesture.state],
+                #             keytap.position, keytap.direction )
 
             vector = [0, 0, 0]
             for index in range(0, len(normals)):
                 vector[0] = vector[0] + (normals[index])[0]
                 vector[1] = vector[1] + (normals[index])[1]
                 vector[2] = vector[2] + (normals[index])[2]
+
+            working_axis = 0;
+            for axis in range(0, 3):
+                if abs(vector[working_axis]) < abs(vector[axis]):
+                    working_axis = axis
+
+            avg_swept_angle = 0
+            for angle in swept_angles:
+                avg_swept_angle = avg_swept_angle + angle
+
+            if len(swept_angles) > 0:
+                avg_swept_angle = avg_swept_angle * 180.0 / (len(swept_angles) * math.pi)
+
+            for axis in range(0, 3):
+                if axis == working_axis:
+                    vector[axis] = avg_swept_angle
+                else:
+                    vector[axis] = 0
 
             if sum(vector) != 0:
                 print ['r'] + vector
