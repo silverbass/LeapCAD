@@ -15,28 +15,30 @@ class SampleListener(Leap.Listener):
     state_names = ['STATE_INVALID', 'STATE_START', 'STATE_UPDATE', 'STATE_END']
 
     def on_init(self, controller):
-        self.fi = open('mel_script.mel', 'w')
         print "Initialized"
 
     def on_connect(self, controller):
         print "Connected"
-
-        # Enable gestures
         controller.enable_gesture(Leap.Gesture.TYPE_CIRCLE);
         controller.enable_gesture(Leap.Gesture.TYPE_KEY_TAP);
         controller.enable_gesture(Leap.Gesture.TYPE_SCREEN_TAP);
         controller.enable_gesture(Leap.Gesture.TYPE_SWIPE);
 
     def on_disconnect(self, controller):
-        # Note: not dispatched when running in a debugger.
         print "Disconnected"
 
     def on_exit(self, controller):
-        self.fi.close
         print "Exited"
 
+    def write(self, n, temp):
+        self.fi = open('mel_script.mel', 'w')
+        self.fi.write(melCmd(n, temp))
+        print [n]temp
+        self.fi.write('\n')
+        self.fi.close
+
+
     def on_frame(self, controller):
-        # Get the most recent frame and report some basic information
         frame = controller.frame()
         swept_angles = []
 
@@ -55,9 +57,7 @@ class SampleListener(Leap.Listener):
             if self.translating:
                 end = [bone.next_joint[0], bone.next_joint[1], bone.next_joint[2]]
                 temp = [end[0] - self.init_pos[0], end[1] - self.init_pos[1], end[2] - self.init_pos[2]]
-                self.fi.write(melCmd(1, temp))
-                print [1] + temp
-                self.fi.write('\n')
+                self.write(1, temp)
 
             # swipes[l,r,u,d]
             swipes = [0,0,0,0]
@@ -75,6 +75,7 @@ class SampleListener(Leap.Listener):
 
                     normals = normals + [circle.normal]
                     # Calculate the angle swept since the last frame
+                    # Flawed
                     swept_angle = 0
                     if circle.state != Leap.Gesture.STATE_START:
                         previous_update = CircleGesture(controller.frame(1).gesture(circle.id))
@@ -139,109 +140,7 @@ class SampleListener(Leap.Listener):
                     vector[axis] = 0
 
             if sum(vector) != 0:
-                self.fi.write(melCmd(2, vector))
-                print [2] + vector
-                self.fi.write('\n')
-
-# POSSIBLE HAND-SHAPE DROP STUFF
-            # tester = [1.0, 44.91178318267466, 57.743819704059696, 70.16927919895994, 34.65348355212118, 10.354287804394628, 23.30137470487314, 36.34202635507951, 44.91178318267466, 10.354287804394628, 13.658626200471023, 27.451934454176808, 57.743819704059696, 23.30137470487314, 13.658626200471023, 15.55379317705879, 70.16927919895994, 36.34202635507951, 27.451934454176808, 15.55379317705879]
-            # for hand in frame.hands:
-            #     normal = hand.palm_normal
-            #     direction = hand.direction
-            #     arm = hand.arm
-            #     x = []
-            #     y = []
-            #     z = []
-            #     distances = []
-
-            #     for finger in hand.fingers:
-            #         bone = finger.bone(2)
-            #         x = x + [bone.next_joint[0]]tester = [1.0, 44.91178318267466, 57.743819704059696, 70.16927919895994, 34.65348355212118, 10.354287804394628, 23.30137470487314, 36.34202635507951, 44.91178318267466, 10.354287804394628, 13.658626200471023, 27.451934454176808, 57.743819704059696, 23.30137470487314, 13.658626200471023, 15.55379317705879, 70.16927919895994, 36.34202635507951, 27.451934454176808, 15.55379317705879]
-            # for hand in frame.hands:
-
-            #     handType = "Left hand" if hand.is_left else "Right hand"
-
-            #     # print "  %s, id %d, position: %s" % (
-            #         # handType, hand.id, hand.palm_position)
-
-            #     # Get the hand's normal vector and direction
-            #     normal = hand.palm_normal
-            #     direction = hand.direction
-
-            #     # Get arm bone
-            #     arm = hand.arm
-
-            #     # Get fingers
-            #     x = []
-            #     y = []
-            #     z = []
-            #     distances = []
-
-            #     for finger in hand.fingers:
-            #         # print self.finger_names[finger.type()]
-
-            #         bone = finger.bone(2)
-            #         x = x + [bone.next_joint[0]]
-            #         y = y + [bone.next_joint[1]]
-            #         z = z + [bone.next_joint[2]]
-
-            #     for i in range(0, 5):
-            #         for j in range(0, 5):
-            #             if i != j:
-            #                 dx = x[i] - x[j] 
-            #                 dy = y[i] - y[j] 
-            #                 dz = z[i] - z[j] 
-            #                 distances = distances + [(dx**2 + dy**2 + dz**2)**0.5]
-
-            #     dx = hand.fingers[0].bone(2).next_joint[0] - hand.fingers[1].bone(3).next_joint[0]
-            #     dy = hand.fingers[0].bone(2).next_joint[1] - hand.fingers[1].bone(3).next_joint[1]
-            #     dz = hand.fingers[0].bone(2).next_joint[2] - hand.fingers[1].bone(3).next_joint[2]
-            #     distances = distances + [(dx**2 + dy**2 + dz**2)**0.5]
-
-            #     for d in range(0, 11):
-            #         distances[d] = distances[d]/distances[0]
-
-            #     passes = []
-            #     for d in range(0, 10):
-            #         if (tester[d] * 0.5 < distances[d]) and (tester[d] * 2 > distances[d]):
-            #             passes = passes + [1]
-            #         else:
-            #             passes = passes + [0]
-
-            #     if sum(passes) > 9:
-            #         print "PASS"
-            #     else:
-            #         print "FAIL"
-            #         y = y + [bone.next_joint[1]]
-            #         z = z + [bone.next_joint[2]]
-
-            #     for i in range(0, 5):
-            #         for j in range(0, 5):
-            #             if i != j:
-            #                 dx = x[i] - x[j] 
-            #                 dy = y[i] - y[j] 
-            #                 dz = z[i] - z[j] 
-            #                 distances = distances + [(dx**2 + dy**2 + dz**2)**0.5]
-
-            #     dx = hand.fingers[0].bone(2).next_joint[0] - hand.fingers[1].bone(3).next_joint[0]
-            #     dy = hand.fingers[0].bone(2).next_joint[1] - hand.fingers[1].bone(3).next_joint[1]
-            #     dz = hand.fingers[0].bone(2).next_joint[2] - hand.fingers[1].bone(3).next_joint[2]
-            #     distances = distances + [(dx**2 + dy**2 + dz**2)**0.5]
-
-            #     for d in range(0, 11):
-            #         distances[d] = distances[d]/distances[0]
-
-            #     passes = []
-            #     for d in range(0, 10):
-            #         if (tester[d] * 0.5 < distances[d]) and (tester[d] * 2 > distances[d]):
-            #             passes = passes + [1]
-            #         else:
-            #             passes = passes + [0]
-
-            #     if sum(passes) > 9:
-            #         print "PASS"
-            #     else:
-            #         print "FAIL"
+                self.write(2, vector)
 
         elif len(frame.hands) == 2:
             hand1 = frame.hands[0]
@@ -292,10 +191,9 @@ class SampleListener(Leap.Listener):
             if self.scaling:
                 end = [bone1.next_joint[0] - bone2.next_joint[0], bone1.next_joint[1] - bone2.next_joint[1], bone1.next_joint[2] - bone2.next_joint[2]]
                 temp = [end[0] - self.init_size[0], end[1] - self.init_size[1], end[2] - self.init_size[2]]
-                self.fi.write(melCmd(3, temp))
-                print [3] + temp
-                self.fi.write('\n')
+                self.write(3, temp)
 
+        #Sleep for 100 milliseconds
         time.sleep(0.10)
 
     def state_string(self, state):
@@ -317,17 +215,13 @@ cmd = 0;
 # 3 is SCALE
 # 4 is CREATE SPHERE
 pVec =[0,0,0];
-# x, y, z
 
 def scalarMaker(n):
     if n == 1:
-        # TRANSLATE SCALAR
         return 1
     elif n == 2:
-        # ROTATE SCALAR
         return 1
     elif n == 3:
-        # SCALE SCALAR
         return 1
     else:
         print "ERROR: cmd not found %d" % n 
@@ -370,21 +264,16 @@ def melCmd(cmd, pVec):
         return melLine
 
 def main():
-    # Create a sample listener and controller
     listener = SampleListener()
     controller = Leap.Controller()
-
-    # Have the sample listener receive events from the controller
     controller.add_listener(listener)
 
-    # Keep this process running until Enter is pressed
     print "Press Enter to quit..."
     try:
         sys.stdin.readline()
     except KeyboardInterrupt:
         pass
     finally:
-        # Remove the sample listener when done
         controller.remove_listener(listener)
 
 if __name__ == "__main__":
