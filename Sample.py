@@ -1,11 +1,3 @@
-################################################################################
-# Copyright (C) 2012-2013 Leap Motion, Inc. All rights reserved.               #
-# Leap Motion proprietary and confidential. Not for distribution.              #
-# Use subject to the terms of the Leap Motion SDK Agreement available at       #
-# https://developer.leapmotion.com/sdk_agreement, or another agreement         #
-# between Leap Motion and you, your company or other organization.             #
-################################################################################
-
 import Leap, sys, thread, time
 from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
 
@@ -38,35 +30,51 @@ class SampleListener(Leap.Listener):
         # Get the most recent frame and report some basic information
         frame = controller.frame()
 
-        # print "Frame id: %d, timestamp: %d, hands: %d, fingers: %d, tools: %d, gestures: %d" % (
-              # frame.id, frame.timestamp, len(frame.hands), len(frame.fingers), len(frame.tools), len(frame.gestures()))
+        translating = false
+        origin = [0, 0, 0]
+        end = [0, 0, 0]
 
-        # Get hands
-        # 
+        if len(frame.hands) == 1:
+            hand = frame.hands[0]
+            finger = hand.fingers[0]
+            bone = finger.bone(3)
 
-        # Testing
+            if hand.pinch_strength > 0.95 and not translating:
+                translating = true
+                origin = [bone.next_joint[0], bone.next_joint[1], bone.next_joint[2]]
+            else:
+                translating = false
+            
+            end = origin = [bone.next_joint[0], bone.next_joint[1], bone.next_joint[2]]
 
-        tester = [0.4184236066963942, 0.5722541995202897, 0.7610265609016752, 0.9455249930722592, 0.4184236066963942, 0.17621199319268485, 0.4235419268262892, 0.6674947538292991, 0.5722541995202897, 0.17621199319268485, 17.316278537479203, 34.444008401104114, 50.86474728220583, 28.30828012876823, 17.316278537479203, 17.450915153205347, 63.196072637264535, 44.613360045539984, 34.444008401104114, 17.450915153205347]
+        elif len(frame.hands) == 2:
+            hand1 = frame.hands[0]
+            hand2 = frame.hands[1]
+            if hand1.pinch_strength > 0.95 and hand2.pinch_strength > 0.95:
+                print "scaling"
+        else:
+            print "..."
 
-        for hand in frame.hands:
 
-            handType = "Left hand" if hand.is_left else "Right hand"
+        # for hand in frame.hands:
+
+            # handType = "Left hand" if hand.is_left else "Right hand"
 
             # print "  %s, id %d, position: %s" % (
-                # handType, hand.id, hand.palm_position)
+            #     handType, hand.id, hand.palm_position)
 
-            # Get the hand's normal vector and direction
-            normal = hand.palm_normal
-            direction = hand.direction
+            # # Get the hand's normal vector and direction
+            # normal = hand.palm_normal
+            # direction = hand.direction
 
             # Get arm bone
-            arm = hand.arm
+            # arm = hand.arm
 
             # Get fingers
-            x = []
-            y = []
-            z = []
-            distances = []
+            # x = []
+            # y = []
+            # z = []
+            # distances = []
 
             # for finger in hand.fingers:
             #     # print self.finger_names[finger.type()]
