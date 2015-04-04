@@ -1,0 +1,86 @@
+#include <vector>
+#include <string>
+
+using namespace std;
+
+//enum cmdType {TRANSLATE, ROTATE, SCALE}
+
+struct cmdType{
+	int t;
+	cmdType():t(0){}
+	cmdType(int t1):t(t1){}
+	// 1 is TRANSLATE
+	// 2 is ROTATE
+	// 3 is SCALE
+	// 4 is CREATE SPHERE
+};
+struct pVec{
+	int x,y,z;
+	pVec(): x(0),y(0),z(0){}
+	pVec(int x1, int y1, int z1): x(x1), y(y1), z(z1){}
+
+};
+int scalarMaker(int n){
+	if(n==1){
+		// TRANSLATE SCALAR
+		return 1;
+	}
+	else if(n==2){
+		//ROTATE SCALAR;
+		return 1;
+	}
+	else if(n==3){
+		//SCALE SCALAR;
+		return 1;
+	}
+	else{
+		cerr<<"ERROR: cmd not found: no "<<n<<endl;
+		return 1;
+	}
+}
+//returns a vector of strings that are MEL commands 
+//to do a certain action
+vector<string> melCmd(const cmdType & cmd, const pVec & v){
+	//scalar for vector
+	vector<string> melLines;
+	string melLine ="";
+	int k = scalarMaker(cmd.t);
+	if(cmd.t==1){
+		melLine.append("move -r ");
+		melLine.append(to_string(k*v.x));
+		melLine.append(" ");
+		melLine.append(to_string(k*v.y));
+		melLine.append(" ");
+		melLine.append(to_string(k*v.z));
+		melLine.append(";");
+		melLines.push_back(melLine);
+		//should probably clear melLine lol;
+		return melLines;
+	}
+	else if(cmd.t==2){
+		melLine.append("rotate -r ");
+		melLine.append(to_string(k*v.x));
+		melLine.append("deg ");
+		melLine.append(to_string(k*v.y));
+		melLine.append("deg ");
+		melLine.append(to_string(k*v.z));
+		melLine.append("deg;");
+		melLines.push_back(melLine);
+		//
+		return melLines
+	}
+	else if(cmd.t==3){
+		melLine.append("scale -r ");
+		melLine.append(to_string(k*v.x));
+		melLine.append(" ");
+		melLine.append(to_string(k*v.y));
+		melLine.append(" ");
+		melLine.append(to_string(k*v.z));
+		melLine.append(";");
+		melLines.push_back(melLine);
+		//
+		return melLines;
+	}
+	cerr<<"cmd not caught: "<<cmd.t<<endl;
+	return melLines;
+}
