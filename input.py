@@ -86,9 +86,9 @@ class SampleListener(Leap.Listener):
                     start = swipe.start_position
                     current = swipe.position
                     
-                    dx = current.getX() - start.getX()
-                    dy = current.getY() - start.getY()
-                    dz = current.getZ() - start.getZ()
+                    dx = current.x - start.x
+                    dy = current.y - start.y
+                    dz = current.z - start.z
 
                     if( (abs(dx) > abs(3*dy)) and (abs(dx) > abs(3*dz)) and dx < 0):
                         swipes[0] += 1
@@ -99,13 +99,16 @@ class SampleListener(Leap.Listener):
                     elif( (abs(dy) > abs(3*dx)) and (abs(dy) > abs(3*dz)) and dy < 0):
                         swipes[3]+= 1
 
-                    #FINISH THE CRAP IN A SECOND
+                    if swipes[0] > 3:
+                        print "Swiped Left"
+                    if swipes[1] > 3:
+                        print "Tinder"
+                    if swipes[2] > 3:
+                        print "Save"
+                    if swipes[3] > 3:
+                        print "Menu"
 
-                     print "  Swipe id: %d, state: %s, position: %s, direction: %s, speed: %f" % (
-                             gesture.id, self.state_names[gesture.state],
-                             swipe.position, swipe.direction, swipe.speed)
-
-                 if gesture.type == Leap.Gesture.TYPE_KEY_TAP:
+                if gesture.type == Leap.Gesture.TYPE_KEY_TAP:
                      keytap = KeyTapGesture(gesture)
                      print "  Key Tap id: %d, %s, position: %s, direction: %s" % (
                              gesture.id, self.state_names[gesture.state],
@@ -247,6 +250,38 @@ class SampleListener(Leap.Listener):
             bone1 = finger1.bone(3)
             finger2 = hand2.fingers[0]
             bone2 = finger2.bone(3)
+            
+            swipes = [0,0,0,0]
+
+            for gesture in frame.gestures():
+                if gesture.type == Leap.Gesture.TYPE_SWIPE:
+                    swipe = SwipeGesture(gesture)
+                    start = swipe.start_position
+                    current = swipe.position
+                    
+                    dx = current.x - start.x
+                    dy = current.y - start.y
+                    dz = current.z - start.z
+
+                    if( (abs(dx) > abs(3*dy)) and (abs(dx) > abs(3*dz)) and dx < 0):
+                        swipes[0] += 1
+                    elif( (abs(dx) > abs(3*dy)) and (abs(dx) > abs(3*dz)) and dx > 0):
+                        swipes[1] += 1
+                    elif( (abs(dy) > abs(3*dx)) and (abs(dy) > abs(3*dz)) and dy > 0):
+                        swipes[2]+= 1
+                    elif( (abs(dy) > abs(3*dx)) and (abs(dy) > abs(3*dz)) and dy < 0):
+                        swipes[3]+= 1
+
+                    if swipes[0] > 3:
+                        print "Swiped Left"
+                    if swipes[1] > 3:
+                        print "Tinder"
+                    if swipes[2] > 3:
+                        print "Save"
+                    if swipes[3] > 6:
+                        print "Delete"
+
+
             if hand1.pinch_strength > 0.95 and hand2.pinch_strength > 0.95:
                 if not self.scaling:
                     self.scaling = True
