@@ -84,6 +84,7 @@ class SampleListener(Leap.Listener):
                 #             gesture.id, self.state_names[gesture.state],
                 #             keytap.position, keytap.direction )
 
+
             vector = [0, 0, 0]
             for index in range(0, len(normals)):
                 vector[0] = vector[0] + (normals[index])[0]
@@ -110,6 +111,67 @@ class SampleListener(Leap.Listener):
 
             if sum(vector) != 0:
                 print ['r'] + vector
+
+        #hand gesture for sphere
+
+               # Testing
+
+            tester = [1.0, 44.91178318267466, 57.743819704059696, 70.16927919895994, 34.65348355212118, 10.354287804394628, 23.30137470487314, 36.34202635507951, 44.91178318267466, 10.354287804394628, 13.658626200471023, 27.451934454176808, 57.743819704059696, 23.30137470487314, 13.658626200471023, 15.55379317705879, 70.16927919895994, 36.34202635507951, 27.451934454176808, 15.55379317705879]
+            for hand in frame.hands:
+
+                handType = "Left hand" if hand.is_left else "Right hand"
+
+                # print "  %s, id %d, position: %s" % (
+                    # handType, hand.id, hand.palm_position)
+
+                # Get the hand's normal vector and direction
+                normal = hand.palm_normal
+                direction = hand.direction
+
+                # Get arm bone
+                arm = hand.arm
+
+                # Get fingers
+                x = []
+                y = []
+                z = []
+                distances = []
+
+                for finger in hand.fingers:
+                    # print self.finger_names[finger.type()]
+
+                    bone = finger.bone(2)
+                    x = x + [bone.next_joint[0]]
+                    y = y + [bone.next_joint[1]]
+                    z = z + [bone.next_joint[2]]
+
+                for i in range(0, 5):
+                    for j in range(0, 5):
+                        if i != j:
+                            dx = x[i] - x[j] 
+                            dy = y[i] - y[j] 
+                            dz = z[i] - z[j] 
+                            distances = distances + [(dx**2 + dy**2 + dz**2)**0.5]
+
+                dx = hand.fingers[0].bone(2).next_joint[0] - hand.fingers[1].bone(3).next_joint[0]
+                dy = hand.fingers[0].bone(2).next_joint[1] - hand.fingers[1].bone(3).next_joint[1]
+                dz = hand.fingers[0].bone(2).next_joint[2] - hand.fingers[1].bone(3).next_joint[2]
+                distances = distances + [(dx**2 + dy**2 + dz**2)**0.5]
+
+                for d in range(0, 11):
+                    distances[d] = distances[d]/distances[0]
+
+                passes = []
+                for d in range(0, 10):
+                    if (tester[d] * 0.5 < distances[d]) and (tester[d] * 2 > distances[d]):
+                        passes = passes + [1]
+                    else:
+                        passes = passes + [0]
+
+                if sum(passes) > 9:
+                    print "PASS"
+                else:
+                    print "FAIL"
 
         elif len(frame.hands) == 2:
             hand1 = frame.hands[0]
