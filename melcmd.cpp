@@ -108,7 +108,7 @@ vector<string> melCmd(const cmdType & cmd, const pVec & v){
 int main()
 {
 	ofstream m_file;
-	m_file.open("mel.script.mel");
+	m_file.open("mel_script.mel");
 	vector<string> n;
     n.push_back("move -r 1 1 1;");
 	for(vector<string>::iterator it = n.begin(); it !=n.end(); ++n){
