@@ -111,10 +111,15 @@ int main()
 	m_file.open("mel_script.mel");
 	vector<string> n;
     n.push_back("move -r 1 1 1;");
+<<<<<<< Updated upstream
 	for(vector<string>::iterator it = n.begin(); it !=n.end(); ++n){
 		m_file<<*it<<endl;
 	}
 	m_file.close();
+=======
+    m_file << n[0];
+    m_file.close();
+>>>>>>> Stashed changes
     return 0;
 }
 
