@@ -38,7 +38,6 @@ class SampleListener(Leap.Listener):
         # Get the most recent frame and report some basic information
         frame = controller.frame()
 
-        print "Reading..."
         # print "Frame id: %d, timestamp: %d, hands: %d, fingers: %d, tools: %d, gestures: %d" % (
               # frame.id, frame.timestamp, len(frame.hands), len(frame.fingers), len(frame.tools), len(frame.gestures()))
 
@@ -47,7 +46,8 @@ class SampleListener(Leap.Listener):
 
         # Testing
 
-        tester = [1.0, 44.91178318267466, 57.743819704059696, 70.16927919895994, 34.65348355212118, 10.354287804394628, 23.30137470487314, 36.34202635507951, 44.91178318267466, 10.354287804394628, 13.658626200471023, 27.451934454176808, 57.743819704059696, 23.30137470487314, 13.658626200471023, 15.55379317705879, 70.16927919895994, 36.34202635507951, 27.451934454176808, 15.55379317705879]
+        tester = [0.4184236066963942, 0.5722541995202897, 0.7610265609016752, 0.9455249930722592, 0.4184236066963942, 0.17621199319268485, 0.4235419268262892, 0.6674947538292991, 0.5722541995202897, 0.17621199319268485, 17.316278537479203, 34.444008401104114, 50.86474728220583, 28.30828012876823, 17.316278537479203, 17.450915153205347, 63.196072637264535, 44.613360045539984, 34.444008401104114, 17.450915153205347]
+
         for hand in frame.hands:
 
             handType = "Left hand" if hand.is_left else "Right hand"
@@ -68,41 +68,44 @@ class SampleListener(Leap.Listener):
             z = []
             distances = []
 
-            for finger in hand.fingers:
-                # print self.finger_names[finger.type()]
+            # for finger in hand.fingers:
+            #     # print self.finger_names[finger.type()]
 
-                bone = finger.bone(2)
-                x = x + [bone.next_joint[0]]
-                y = y + [bone.next_joint[1]]
-                z = z + [bone.next_joint[2]]
+            #     bone = finger.bone(2)
+            #     x = x + [bone.next_joint[0]]
+            #     y = y + [bone.next_joint[1]]
+            #     z = z + [bone.next_joint[2]]
 
-            for i in range(0, 5):
-                for j in range(0, 5):
-                    if i != j:
-                        dx = x[i] - x[j] 
-                        dy = y[i] - y[j] 
-                        dz = z[i] - z[j] 
-                        distances = distances + [(dx**2 + dy**2 + dz**2)**0.5]
+            # for i in range(0, 5):
+            #     for j in range(0, 5):
+            #         if i != j:
+            #             dx = x[i] - x[j] 
+            #             dy = y[i] - y[j] 
+            #             dz = z[i] - z[j] 
+            #             distances = distances + [(dx**2 + dy**2 + dz**2)**0.5]
 
-            dx = hand.fingers[0].bone(2).next_joint[0] - hand.fingers[1].bone(3).next_joint[0]
-            dx = hand.fingers[0].bone(2).next_joint[1] - hand.fingers[1].bone(3).next_joint[1]
-            dx = hand.fingers[0].bone(2).next_joint[2] - hand.fingers[1].bone(3).next_joint[2]
-            distances = distances + [(dx**2 + dy**2 + dz**2)**0.5]
+            # dx = hand.fingers[0].bone(2).next_joint[0] - hand.fingers[1].bone(3).next_joint[0]
+            # dx = hand.fingers[0].bone(2).next_joint[1] - hand.fingers[1].bone(3).next_joint[1]
+            # dx = hand.fingers[0].bone(2).next_joint[2] - hand.fingers[1].bone(3).next_joint[2]
+            # distances = distances + [(dx**2 + dy**2 + dz**2)**0.5]
 
-            for d in range(0, 11):
-                distances[d] = distances[d]/distances[0]
+            # avg = sum(distances)/10
+            # for d in range(0, 10):
+            #     distances[d] = distances[d]/avg
 
-            passes = []
-            for d in range(0, 10):
-                if (tester[d] * 0.5 < distances[d]) and (tester[d] * 2 > distances[d]):
-                    passes = passes + [1]
-                else:
-                    passes = passes + [0]
+            # passes = []
+            # for d in range(0, 10):
+            #     if (tester[d] * 0.8 < distances[d]) and (tester[d] * 1.2 > distances[d]):
+            #         passes = passes + [1]
+            #     else:
+            #         passes = passes + [0]
 
-            if sum(passes) > 9:
-                print "PASS"
-            else:
-                print "FAIL"
+            # if sum(passes) > 9:
+            #     print "PASS"
+            # else:
+            #     print "FAIL"
+
+            # print distances
 
         # # Get tools
         # for tool in frame.tools:
@@ -111,31 +114,31 @@ class SampleListener(Leap.Listener):
         #         tool.id, tool.tip_position, tool.direction)
 
         # # Get gestures
-        # for gesture in frame.gestures():
-        #     if gesture.type == Leap.Gesture.TYPE_CIRCLE:
-        #         circle = CircleGesture(gesture)
+        for gesture in frame.gestures():
+            if gesture.type == Leap.Gesture.TYPE_CIRCLE:
+                circle = CircleGesture(gesture)
 
-        #         # Determine clock direction using the angle between the pointable and the circle normal
-        #         if circle.pointable.direction.angle_to(circle.normal) <= Leap.PI/2:
-        #             clockwiseness = "clockwise"
-        #         else:
-        #             clockwiseness = "counterclockwise"
+                # Determine clock direction using the angle between the pointable and the circle normal
+                if circle.pointable.direction.angle_to(circle.normal) <= Leap.PI/2:
+                    clockwiseness = "clockwise"
+                else:
+                    clockwiseness = "counterclockwise"
 
-        #         # Calculate the angle swept since the last frame
-        #         swept_angle = 0
-        #         if circle.state != Leap.Gesture.STATE_START:
-        #             previous_update = CircleGesture(controller.frame(1).gesture(circle.id))
-        #             swept_angle =  (circle.progress - previous_update.progress) * 2 * Leap.PI
+                # Calculate the angle swept since the last frame
+                swept_angle = 0
+                if circle.state != Leap.Gesture.STATE_START:
+                    previous_update = CircleGesture(controller.frame(1).gesture(circle.id))
+                    swept_angle =  (circle.progress - previous_update.progress) * 2 * Leap.PI
 
-        #         print "  Circle id: %d, %s, progress: %f, radius: %f, angle: %f degrees, %s" % (
-        #                 gesture.id, self.state_names[gesture.state],
-        #                 circle.progress, circle.radius, swept_angle * Leap.RAD_TO_DEG, clockwiseness)
+                print "  Circle id: %d, %s, progress: %f, radius: %f, angle: %f degrees, %s" % (
+                        gesture.id, self.state_names[gesture.state],
+                        circle.progress, circle.radius, swept_angle * Leap.RAD_TO_DEG, clockwiseness)
 
-        #     if gesture.type == Leap.Gesture.TYPE_SWIPE:
-        #         swipe = SwipeGesture(gesture)
-        #         print "  Swipe id: %d, state: %s, position: %s, direction: %s, speed: %f" % (
-        #                 gesture.id, self.state_names[gesture.state],
-        #                 swipe.position, swipe.direction, swipe.speed)
+            if gesture.type == Leap.Gesture.TYPE_SWIPE:
+                swipe = SwipeGesture(gesture)
+                print "  Swipe id: %d, state: %s, position: %s, direction: %s, speed: %f" % (
+                        gesture.id, self.state_names[gesture.state],
+                        swipe.position, swipe.direction, swipe.speed)
 
         #     if gesture.type == Leap.Gesture.TYPE_KEY_TAP:
         #         keytap = KeyTapGesture(gesture)
