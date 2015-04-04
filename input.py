@@ -59,6 +59,9 @@ class SampleListener(Leap.Listener):
                 print [1] + temp
                 self.fi.write('\n')
 
+            # swipes[l,r,u,d]
+            swipes = [0,0,0,0]
+            
             normals = []
             for gesture in frame.gestures():
                 if gesture.type == Leap.Gesture.TYPE_CIRCLE:
@@ -78,17 +81,35 @@ class SampleListener(Leap.Listener):
                         swept_angle =  (circle.progress - previous_update.progress) * 2 * Leap.PI
                     swept_angles = swept_angles + [swept_angle]
 
-                # if gesture.type == Leap.Gesture.TYPE_SWIPE:
-                #     swipe = SwipeGesture(gesture)
-                #     print "  Swipe id: %d, state: %s, position: %s, direction: %s, speed: %f" % (
-                #             gesture.id, self.state_names[gesture.state],
-                #             swipe.position, swipe.direction, swipe.speed)
+                if gesture.type == Leap.Gesture.TYPE_SWIPE:
+                    swipe = SwipeGesture(gesture)
+                    start = swipe.start_position
+                    current = swipe.position
+                    
+                    dx = current.getX() - start.getX()
+                    dy = current.getY() - start.getY()
+                    dz = current.getZ() - start.getZ()
 
-                # if gesture.type == Leap.Gesture.TYPE_KEY_TAP:
-                #     keytap = KeyTapGesture(gesture)
-                #     print "  Key Tap id: %d, %s, position: %s, direction: %s" % (
-                #             gesture.id, self.state_names[gesture.state],
-                #             keytap.position, keytap.direction )
+                    if( (abs(dx) > abs(3*dy)) and (abs(dx) > abs(3*dz)) and dx < 0):
+                        swipes[0] += 1
+                    elif( (abs(dx) > abs(3*dy)) and (abs(dx) > abs(3*dz)) and dx > 0):
+                        swipes[1] += 1
+                    elif( (abs(dy) > abs(3*dx)) and (abs(dy) > abs(3*dz)) and dy > 0):
+                        swipes[2]+= 1
+                    elif( (abs(dy) > abs(3*dx)) and (abs(dy) > abs(3*dz)) and dy < 0):
+                        swipes[3]+= 1
+
+                    #FINISH THE CRAP IN A SECOND
+
+                     print "  Swipe id: %d, state: %s, position: %s, direction: %s, speed: %f" % (
+                             gesture.id, self.state_names[gesture.state],
+                             swipe.position, swipe.direction, swipe.speed)
+
+                 if gesture.type == Leap.Gesture.TYPE_KEY_TAP:
+                     keytap = KeyTapGesture(gesture)
+                     print "  Key Tap id: %d, %s, position: %s, direction: %s" % (
+                             gesture.id, self.state_names[gesture.state],
+                             keytap.position, keytap.direction )
 
             vector = [0, 0, 0]
             for index in range(0, len(normals)):
