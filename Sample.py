@@ -5,9 +5,10 @@ from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
 class SampleListener(Leap.Listener):
     translating = False
     scaling = False
-    origin = [0, 0, 0]
-    end = [0, 0, 0]
-    base = [0, 0, 0]
+    rotating = False
+    init_pos = [0, 0, 0]
+    init_size = [0, 0, 0]
+    initial_angle = [0, 0, 0]
     finger_names = ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky']
     bone_names = ['Metacarpal', 'Proximal', 'Intermediate', 'Distal']
     state_names = ['STATE_INVALID', 'STATE_START', 'STATE_UPDATE', 'STATE_END']
@@ -42,17 +43,54 @@ class SampleListener(Leap.Listener):
 
             if hand.pinch_strength > 0.95:
                 if not self.translating:
-                    print "TRANSLATING"
                     self.translating = True
-                    self.origin = [bone.next_joint[0], bone.next_joint[1], bone.next_joint[2]]
+                    self.init_pos = [bone.next_joint[0], bone.next_joint[1], bone.next_joint[2]]
             else:
                 self.translating = False
 
             if self.translating:
                 end = [bone.next_joint[0], bone.next_joint[1], bone.next_joint[2]]
-                print [end[0] - self.origin[0], end[1] - self.origin[1], end[2] - self.origin[2]]
-            # else:
-                # print "1 hand(s)"
+                print ['t', end[0] - self.init_pos[0], end[1] - self.init_pos[1], end[2] - self.init_pos[2]]
+ 
+            normals = []
+            for gesture in frame.gestures():
+                if gesture.type == Leap.Gesture.TYPE_CIRCLE:
+                    circle = CircleGesture(gesture)
+
+                    # Determine clock direction using the angle between the pointable and the circle normal
+                    if circle.pointable.direction.angle_to(circle.normal) <= Leap.PI/2:
+                        clockwiseness = "clockwise"
+                    else:
+                        clockwiseness = "counterclockwise"
+
+                    normals = normals + [circle.normal]
+                    # Calculate the angle swept since the last frame
+                    swept_angle = 0
+                    if circle.state != Leap.Gesture.STATE_START:
+                        previous_update = CircleGesture(controller.frame(1).gesture(circle.id))
+                        swept_angle =  (circle.progress - previous_update.progress) * 2 * Leap.PI
+
+
+                if gesture.type == Leap.Gesture.TYPE_SWIPE:
+                    swipe = SwipeGesture(gesture)
+                    print "  Swipe id: %d, state: %s, position: %s, direction: %s, speed: %f" % (
+                            gesture.id, self.state_names[gesture.state],
+                            swipe.position, swipe.direction, swipe.speed)
+
+                if gesture.type == Leap.Gesture.TYPE_KEY_TAP:
+                    keytap = KeyTapGesture(gesture)
+                    print "  Key Tap id: %d, %s, position: %s, direction: %s" % (
+                            gesture.id, self.state_names[gesture.state],
+                            keytap.position, keytap.direction )
+
+            vector = [0, 0, 0]
+            for index in range(0, len(normals)):
+                vector[0] = vector[0] + (normals[index])[0]
+                vector[1] = vector[1] + (normals[index])[1]
+                vector[2] = vector[2] + (normals[index])[2]
+
+            if sum(vector) != 0:
+                print ['r'] + vector
 
         elif len(frame.hands) == 2:
             hand1 = frame.hands[0]
@@ -63,18 +101,16 @@ class SampleListener(Leap.Listener):
             bone2 = finger2.bone(3)
             if hand1.pinch_strength > 0.95 and hand2.pinch_strength > 0.95:
                 if not self.scaling:
-                    print "SCALING"
                     self.scaling = True
-                    self.base = [bone1.next_joint[0] - bone2.next_joint[0], bone1.next_joint[1] - bone2.next_joint[1], bone1.next_joint[2] - bone2.next_joint[2]]
-                else:
-                    self.scaling = False
+                    self.init_size = [bone1.next_joint[0] - bone2.next_joint[0], bone1.next_joint[1] - bone2.next_joint[1], bone1.next_joint[2] - bone2.next_joint[2]]
+            else:
+                self.scaling = False
 
             if self.scaling:
                 end = [bone1.next_joint[0] - bone2.next_joint[0], bone1.next_joint[1] - bone2.next_joint[1], bone1.next_joint[2] - bone2.next_joint[2]]
-                print [end[0] - self.base[0], end[1] - self.base[1], end[2] - self.base[2]]
-            # else:
-                # print "2 hand(s)"
-        # else:
+                print ['s', end[0] - self.init_size[0], end[1] - self.init_size[1], end[2] - self.init_size[2]]
+
+        time.sleep(0.10)
 
     def state_string(self, state):
         if state == Leap.Gesture.STATE_START:
