@@ -23,7 +23,7 @@ def command(cmd,pVec):
 		cmds.move(k*pVec[0], k*pVec[1], k*pVec[2])
 	elif cmd == 2:
 		cmds.rotate(k*pVec[0], k*pVec[1], k*pVec[2])
-	elif cmd =- 3:
+	elif cmd == 3:
 		cmds.scale(k*pVec[0], k*pVec[1], k*pVec[2])
 command(1,[1,2,3])
 

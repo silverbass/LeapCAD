@@ -1,6 +1,6 @@
-import Leap, sys, thread, time, math
-from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
+import Leap, sys, thread, time, math, command
 
+from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
 
 class SampleListener(Leap.Listener):
     fi = None
@@ -30,11 +30,10 @@ class SampleListener(Leap.Listener):
     def on_exit(self, controller):
         print "Exited"
 
-    def write(self, n, temp):
-        self.fi = open('mel_script.mel', 'w')
-        self.fi.write(melCmd(n, temp))
-        print [n]temp
-        self.fi.write('\n')
+    def write(self, n, vector):
+        self.fi = open('line.py', 'w')
+        self.fi.write("c_type = " + n + "\npVec = " + vector)
+        print "c_type = " + n + "\npVec = " + vector
         self.fi.close
 
 
@@ -239,60 +238,6 @@ class SampleListener(Leap.Listener):
 
         if state == Leap.Gesture.STATE_INVALID:
             return "STATE_INVALID"
-
-cmd = 0;
-# 1 is TRANSLATE
-# 2 is ROTATE
-# 3 is SCALE
-# 4 is CREATE SPHERE
-pVec =[0,0,0];
-
-def scalarMaker(n):
-    if n == 1:
-        return 1
-    elif n == 2:
-        return 1
-    elif n == 3:
-        return 1
-    else:
-        print "ERROR: cmd not found %d" % n 
-        return 1
-
-def melCmd(cmd, pVec):
-    melLine = "";
-    k = scalarMaker(cmd);
-    if cmd == 1:
-        melLine += "move -r "
-        melLine += str(k*pVec[0]);
-        melLine += " "
-        melLine += str(k*pVec[1]);
-        melLine += " "
-        melLine += str(k*pVec[2]);
-        melLine += ";"
-        return melLine
-    elif cmd == 2:
-        melLine += "rotate -r "
-        melLine += str(k*pVec[0]);
-        melLine += "deg "
-        melLine += str(k*pVec[1]);
-        melLine += "deg "
-        melLine += str(k*pVec[2]);
-        melLine += ";"
-        return melLine
-
-    elif cmd == 3:
-        melLine += "scale -r "
-        melLine += str(k*pVec[0]);
-        melLine += " "
-        melLine += str(k*pVec[1]);
-        melLine += " "
-        melLine += str(k*pVec[2]);
-        melLine += ";"
-        return melLine
-    else:       
-        print "cmd not found %d" % cmd
-        print "vector position"
-        return melLine
 
 def main():
     listener = SampleListener()
