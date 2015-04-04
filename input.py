@@ -15,7 +15,6 @@ class SampleListener(Leap.Listener):
     state_names = ['STATE_INVALID', 'STATE_START', 'STATE_UPDATE', 'STATE_END']
 
     def on_init(self, controller):
-        self.fi = open('mel_script.mel', 'w')
         print "Initialized"
 
     def on_connect(self, controller):
@@ -55,9 +54,12 @@ class SampleListener(Leap.Listener):
             if self.translating:
                 end = [bone.next_joint[0], bone.next_joint[1], bone.next_joint[2]]
                 temp = [end[0] - self.init_pos[0], end[1] - self.init_pos[1], end[2] - self.init_pos[2]]
+        
+                self.fi = open('mel_script.mel', 'w')
                 self.fi.write(melCmd(1, temp))
                 print [1] + temp
                 self.fi.write('\n')
+                self.fi.close
 
             # swipes[l,r,u,d]
             swipes = [0,0,0,0]
@@ -101,12 +103,28 @@ class SampleListener(Leap.Listener):
 
                     if swipes[0] > 3:
                         print "Swiped Left"
+                        # self.fi = open('mel_script.mel', 'w')
+                        # self.fi.write(?)
+                        # self.fi.write('\n')
+                        # self.fi.close
                     if swipes[1] > 3:
                         print "Tinder"
+                        # self.fi = open('mel_script.mel', 'w')
+                        # self.fi.write(?)
+                        # self.fi.write('\n')
+                        # self.fi.close
                     if swipes[2] > 3:
                         print "Save"
+                        # self.fi = open('mel_script.mel', 'w')
+                        # self.fi.write(?)
+                        # self.fi.write('\n')
+                        # self.fi.close
                     if swipes[3] > 3:
                         print "Menu"
+                        # self.fi = open('mel_script.mel', 'w')
+                        # self.fi.write(?)
+                        # self.fi.write('\n')
+                        # self.fi.close
 
                 if gesture.type == Leap.Gesture.TYPE_KEY_TAP:
                      keytap = KeyTapGesture(gesture)
@@ -139,12 +157,15 @@ class SampleListener(Leap.Listener):
                     vector[axis] = 0
 
             if sum(vector) != 0:
+                self.fi = open('mel_script.mel', 'w')
                 self.fi.write(melCmd(2, vector))
                 print [2] + vector
                 self.fi.write('\n')
+                self.fi.close
 
-# POSSIBLE HAND-SHAPE DROP STUFF
-            # tester = [1.0, 44.91178318267466, 57.743819704059696, 70.16927919895994, 34.65348355212118, 10.354287804394628, 23.30137470487314, 36.34202635507951, 44.91178318267466, 10.354287804394628, 13.658626200471023, 27.451934454176808, 57.743819704059696, 23.30137470487314, 13.658626200471023, 15.55379317705879, 70.16927919895994, 36.34202635507951, 27.451934454176808, 15.55379317705879]
+
+    # POSSIBLE HAND-SHAPE DROP STUFF
+            # a = [1.0, 44.91178318267466, 57.743819704059696, 70.16927919895994, 34.65348355212118, 10.354287804394628, 23.30137470487314, 36.34202635507951, 44.91178318267466, 10.354287804394628, 13.658626200471023, 27.451934454176808, 57.743819704059696, 23.30137470487314, 13.658626200471023, 15.55379317705879, 70.16927919895994, 36.34202635507951, 27.451934454176808, 15.55379317705879]
             # for hand in frame.hands:
             #     normal = hand.palm_normal
             #     direction = hand.direction
@@ -156,7 +177,7 @@ class SampleListener(Leap.Listener):
 
             #     for finger in hand.fingers:
             #         bone = finger.bone(2)
-            #         x = x + [bone.next_joint[0]]tester = [1.0, 44.91178318267466, 57.743819704059696, 70.16927919895994, 34.65348355212118, 10.354287804394628, 23.30137470487314, 36.34202635507951, 44.91178318267466, 10.354287804394628, 13.658626200471023, 27.451934454176808, 57.743819704059696, 23.30137470487314, 13.658626200471023, 15.55379317705879, 70.16927919895994, 36.34202635507951, 27.451934454176808, 15.55379317705879]
+            #         x = x + [bone.next_joint[0]]a = [1.0, 44.91178318267466, 57.743819704059696, 70.16927919895994, 34.65348355212118, 10.354287804394628, 23.30137470487314, 36.34202635507951, 44.91178318267466, 10.354287804394628, 13.658626200471023, 27.451934454176808, 57.743819704059696, 23.30137470487314, 13.658626200471023, 15.55379317705879, 70.16927919895994, 36.34202635507951, 27.451934454176808, 15.55379317705879]
             # for hand in frame.hands:
 
             #     handType = "Left hand" if hand.is_left else "Right hand"
@@ -203,7 +224,7 @@ class SampleListener(Leap.Listener):
 
             #     passes = []
             #     for d in range(0, 10):
-            #         if (tester[d] * 0.5 < distances[d]) and (tester[d] * 2 > distances[d]):
+            #         if (a[d] * 0.5 < distances[d]) and (a[d] * 2 > distances[d]):
             #             passes = passes + [1]
             #         else:
             #             passes = passes + [0]
@@ -233,7 +254,7 @@ class SampleListener(Leap.Listener):
 
             #     passes = []
             #     for d in range(0, 10):
-            #         if (tester[d] * 0.5 < distances[d]) and (tester[d] * 2 > distances[d]):
+            #         if (a[d] * 0.5 < distances[d]) and (a[d] * 2 > distances[d]):
             #             passes = passes + [1]
             #         else:
             #             passes = passes + [0]
@@ -274,13 +295,28 @@ class SampleListener(Leap.Listener):
 
                     if swipes[0] > 3:
                         print "Swiped Left"
+                        # self.fi = open('mel_script.mel', 'w')
+                        # self.fi.write(?)
+                        # self.fi.write('\n')
+                        # self.fi.close
                     if swipes[1] > 3:
                         print "Tinder"
+                        # self.fi = open('mel_script.mel', 'w')
+                        # self.fi.write(?)
+                        # self.fi.write('\n')
+                        # self.fi.close
                     if swipes[2] > 3:
                         print "Save"
+                        # self.fi = open('mel_script.mel', 'w')
+                        # self.fi.write(?)
+                        # self.fi.write('\n')
+                        # self.fi.close
                     if swipes[3] > 6:
                         print "Delete"
-
+                        # self.fi = open('mel_script.mel', 'w')
+                        # self.fi.write(?)
+                        # self.fi.write('\n')
+                        # self.fi.close
 
             if hand1.pinch_strength > 0.95 and hand2.pinch_strength > 0.95:
                 if not self.scaling:
@@ -292,9 +328,12 @@ class SampleListener(Leap.Listener):
             if self.scaling:
                 end = [bone1.next_joint[0] - bone2.next_joint[0], bone1.next_joint[1] - bone2.next_joint[1], bone1.next_joint[2] - bone2.next_joint[2]]
                 temp = [end[0] - self.init_size[0], end[1] - self.init_size[1], end[2] - self.init_size[2]]
+                
+                self.fi = open('mel_script.mel', 'w')
                 self.fi.write(melCmd(3, temp))
                 print [3] + temp
                 self.fi.write('\n')
+                self.fi.close
 
         time.sleep(0.10)
 
