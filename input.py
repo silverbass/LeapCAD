@@ -102,12 +102,28 @@ class SampleListener(Leap.Listener):
 
                     if swipes[0] > 3:
                         print "Swiped Left"
+                        # self.fi = open('mel_script.mel', 'w')
+                        # self.fi.write(?)
+                        # self.fi.write('\n')
+                        # self.fi.close
                     if swipes[1] > 3:
                         print "Tinder"
+                        # self.fi = open('mel_script.mel', 'w')
+                        # self.fi.write(?)
+                        # self.fi.write('\n')
+                        # self.fi.close
                     if swipes[2] > 3:
                         print "Save"
+                        # self.fi = open('mel_script.mel', 'w')
+                        # self.fi.write(?)
+                        # self.fi.write('\n')
+                        # self.fi.close
                     if swipes[3] > 3:
                         print "Menu"
+                        # self.fi = open('mel_script.mel', 'w')
+                        # self.fi.write(?)
+                        # self.fi.write('\n')
+                        # self.fi.close
 
                 if gesture.type == Leap.Gesture.TYPE_KEY_TAP:
                      keytap = KeyTapGesture(gesture)
@@ -173,13 +189,28 @@ class SampleListener(Leap.Listener):
 
                     if swipes[0] > 3:
                         print "Swiped Left"
+                        # self.fi = open('mel_script.mel', 'w')
+                        # self.fi.write(?)
+                        # self.fi.write('\n')
+                        # self.fi.close
                     if swipes[1] > 3:
                         print "Tinder"
+                        # self.fi = open('mel_script.mel', 'w')
+                        # self.fi.write(?)
+                        # self.fi.write('\n')
+                        # self.fi.close
                     if swipes[2] > 3:
                         print "Save"
+                        # self.fi = open('mel_script.mel', 'w')
+                        # self.fi.write(?)
+                        # self.fi.write('\n')
+                        # self.fi.close
                     if swipes[3] > 6:
                         print "Delete"
-
+                        # self.fi = open('mel_script.mel', 'w')
+                        # self.fi.write(?)
+                        # self.fi.write('\n')
+                        # self.fi.close
 
             if hand1.pinch_strength > 0.95 and hand2.pinch_strength > 0.95:
                 if not self.scaling:
