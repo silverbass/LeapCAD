@@ -8,32 +8,10 @@ from myo.lowlevel import pose_t, stream_emg
 from myo.six import print_
 import random 
 
-class MyoListener(myo.DeviceListener):
-    # return False from any method to stop the Hub
-
-    def on_connect(self, myo, timestamp):
-        print_("Connected to Myo")
-        myo.vibrate('short')
-        myo.request_rssi()
-
-    def on_pose(self, myo, timestamp, pose):
-        # print_('on_pose', pose)
-        if pose == pose_t.fist:
-            print "FIST"
-        else:
-            print "Not FIST"
-
-    def on_unlock(self, myo, timestamp):
-        print_('unlocked')
-
-    def on_lock(self, myo, timestamp):
-        print_('locked')
-
-    def on_sync(self, myo, timestamp, arm, x_direction):
-        print_('synced', arm, x_direction)
-
-class SampleListener(Leap.Listener):
-    FPS = 50
+class SampleListener(Leap.Listener, myo.DeviceListener):
+    fi = None
+    fist = False
+    FPS = 100
     translating = False
     trans_axis = 0
     scaling = False
@@ -43,21 +21,39 @@ class SampleListener(Leap.Listener):
     last_size = [0, 0, 0]
     state_names = ['STATE_INVALID', 'STATE_START', 'STATE_UPDATE', 'STATE_END']
 
+    def set_run(self, hub, n):
+        hub.run(n, self)
+
+    def on_connect(self, *args):
+        if len(args) == 2:
+            print_("Connected to Myo")
+            args[0].vibrate('short')
+            args[0].request_rssi()
+        elif len(args) == 1:
+            print "Connected to Leap"
+            args[0].enable_gesture(Leap.Gesture.TYPE_CIRCLE);
+            args[0].enable_gesture(Leap.Gesture.TYPE_KEY_TAP);
+            args[0].enable_gesture(Leap.Gesture.TYPE_SCREEN_TAP);
+            args[0].enable_gesture(Leap.Gesture.TYPE_SWIPE);
+
+    def on_pose(self, myo, timestamp, pose):
+        # print 'on_pose', pose
+        if pose == pose_t.fist:
+            self.fist = True
+        elif pose == pose_t.fingers_spread or pose == pose_t.rest:
+            self.fist = False
+
+    def on_sync(self, myo, timestamp, arm, x_direction):
+        print_('synced', arm, x_direction)
+
     def on_init(self, controller):
         print "Initialized"
-
-    def on_connect(self, controller):
-        print "Connected"
-        controller.enable_gesture(Leap.Gesture.TYPE_CIRCLE);
-        controller.enable_gesture(Leap.Gesture.TYPE_KEY_TAP);
-        controller.enable_gesture(Leap.Gesture.TYPE_SCREEN_TAP);
-        controller.enable_gesture(Leap.Gesture.TYPE_SWIPE);
 
     def on_disconnect(self, controller):
         print "Disconnected"
 
     def on_exit(self, controller):
-        print "Exited"
+        print "Closing"
 
     def write(self, n, vector):
         directory = '/Users/raychen/Library/Preferences/Autodesk/maya/2015-x64/prefs/scriptEditorTemp/'
@@ -72,13 +68,13 @@ class SampleListener(Leap.Listener):
             self.fi.write("def scalar_maker(c_type):\n")
             self.fi.write("    if (c_type == 1):\n")
             self.fi.write("        # TRANSLATE SCALAR\n")
-            self.fi.write("        return .005\n")
+            self.fi.write("        return .03\n")
             self.fi.write("    elif (c_type == 2):\n")
             self.fi.write("        # ROTATE SCALAR\n")
-            self.fi.write("        return .5\n")
+            self.fi.write("        return .1\n")
             self.fi.write("    elif (c_type == 3):\n")
             self.fi.write("        # SCALE SCALAR\n")
-            self.fi.write("        return .001\n")
+            self.fi.write("        return .0001\n")
             self.fi.write("    else:\n")
             self.fi.write("        print 'ERROR: cmd not found %d' % c_type \n")
             self.fi.write("        return 1\n")
@@ -93,6 +89,7 @@ class SampleListener(Leap.Listener):
             # self.fi.write("def __init__():\n")
             # self.fi.write("    pass")
             self.fi.close
+            print self.fist
             print "c_type = %d\npVec = %s \n" % (n, vector)
         else:
             print "directory does not exist"
@@ -102,14 +99,14 @@ class SampleListener(Leap.Listener):
         frame = controller.frame()
         swept_angles = []
 
-        # print self.hub.pose
         written = False
         if len(frame.hands) == 1:
             hand = frame.hands[0]
             finger = hand.fingers[0]
             bone = finger.bone(3)
 
-            if hand.pinch_strength > 0.95:
+            if hand.pinch_strength > 0.95 and not self.fist:
+            # if self.fist:
                 if not self.translating:
                     self.translating = True
                     self.last_pos = [bone.next_joint[0], bone.next_joint[1], bone.next_joint[2]]
@@ -167,34 +164,12 @@ class SampleListener(Leap.Listener):
 
                     if swipes[0] > 3:
                         print "Swiped Left"
-                        # self.fi = open('mel_script.mel', 'w')
-                        # self.fi.write(?)
-                        # self.fi.write('\n')
-                        # self.fi.close
                     if swipes[1] > 3:
                         print "Tinder"
-                        # self.fi = open('mel_script.mel', 'w')
-                        # self.fi.write(?)
-                        # self.fi.write('\n')
-                        # self.fi.close
                     if swipes[2] > 3:
                         print "Save"
-                        # self.fi = open('mel_script.mel', 'w')
-                        # self.fi.write(?)
-                        # self.fi.write('\n')
-                        # self.fi.close
                     if swipes[3] > 3:
                         print "Menu"
-                        # self.fi = open('mel_script.mel', 'w')
-                        # self.fi.write(?)
-                        # self.fi.write('\n')
-                        # self.fi.close
-
-                if gesture.type == Leap.Gesture.TYPE_KEY_TAP:
-                     keytap = KeyTapGesture(gesture)
-                     print "  Key Tap id: %d, %s, position: %s, direction: %s" % (
-                             gesture.id, self.state_names[gesture.state],
-                             keytap.position, keytap.direction )
 
             vector = [0, 0, 0]
             for index in range(0, len(normals)):
@@ -235,6 +210,8 @@ class SampleListener(Leap.Listener):
             finger2 = hand2.fingers[0]
             bone2 = finger2.bone(3)
             
+            has_ball = False
+            has_cube = False
             swipes = [0,0,0,0]
 
             for gesture in frame.gestures():
@@ -258,33 +235,24 @@ class SampleListener(Leap.Listener):
 
                     if swipes[0] > 3:
                         print "Swiped Left"
-                        # self.fi = open('mel_script.mel', 'w')
-                        # self.fi.write(?)
-                        # self.fi.write('\n')
-                        # self.fi.close
                     if swipes[1] > 3:
                         print "Tinder"
-                        # self.fi = open('mel_script.mel', 'w')
-                        # self.fi.write(?)
-                        # self.fi.write('\n')
-                        # self.fi.close
                     if swipes[2] > 3:
                         print "Save"
-                        # self.fi = open('mel_script.mel', 'w')
-                        # self.fi.write(?)
-                        # self.fi.write('\n')
-                        # self.fi.close
                     if swipes[3] > 6:
                         print "Delete"
-                        # self.fi = open('mel_script.mel', 'w')
-                        # self.fi.write(?)
-                        # self.fi.write('\n')
-                        # self.fi.close
 
-            if hand1.pinch_strength > 0.95 and hand2.pinch_strength > 0.95:
+                if gesture.type == Leap.Gesture.TYPE_KEY_TAP:
+                    keytap = KeyTapGesture(gesture)
+                    if has_ball:
+                        self.write(4, [])
+                    elif has_cube:
+                        self.write(5, [])
+
+            if hand1.pinch_strength > 0.95 and hand2.pinch_strength > 0.95 and not self.fist:
                 if not self.scaling:
                     self.scaling = True
-                    self.last_size = [bone1.next_joint[0] - bone2.next_joint[0], bone1.next_joint[1] - bone2.next_joint[1], bone1.next_joint[2] - bone2.next_joint[2]]
+                    self.last_size = [abs(bone1.next_joint[0] - bone2.next_joint[0]), abs(bone1.next_joint[1] - bone2.next_joint[1]), abs(bone1.next_joint[2] - bone2.next_joint[2])]
             else:
                 self.scaling = False
 
@@ -294,7 +262,7 @@ class SampleListener(Leap.Listener):
 
             #Writing
             if self.scaling and not written:
-                end = [bone1.next_joint[0] - bone2.next_joint[0], bone1.next_joint[1] - bone2.next_joint[1], bone1.next_joint[2] - bone2.next_joint[2]]
+                end = [abs(bone1.next_joint[0] - bone2.next_joint[0]), abs(bone1.next_joint[1] - bone2.next_joint[1]), abs(bone1.next_joint[2] - bone2.next_joint[2])]
                 temp = [end[0] - self.last_size[0], end[1] - self.last_size[1], end[2] - self.last_size[2]]
                 for axis in range(0, 3):
                     if self.scaling_axis != axis:
@@ -330,9 +298,9 @@ def main():
     myo.init()
     hub = myo.Hub()
     hub.set_locking_policy(myo.locking_policy.none)
-    hub.run(1000, MyoListener())
 
     listener = SampleListener()
+    listener.set_run(hub, 1000)
     controller = Leap.Controller()
     controller.add_listener(listener)
 
@@ -343,7 +311,6 @@ def main():
         pass
     finally:
         controller.remove_listener(listener)
-        print_("Quitting ...")
         hub.stop(True)
 
 if __name__ == "__main__":
