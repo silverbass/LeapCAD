@@ -3,16 +3,15 @@ import Leap, sys, thread, time, math, os
 from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
 
 class SampleListener(Leap.Listener):
-    FPS = 30
+    FPS = 50
     fi = None
     translating = False
     trans_axis = 0
     scaling = False
     scaling_axis = 0
     rotating = False
-    init_pos = [0, 0, 0]
-    init_size = [0, 0, 0]
-    initial_angle = [0, 0, 0]
+    last_pos = [0, 0, 0]
+    last_size = [0, 0, 0]
     state_names = ['STATE_INVALID', 'STATE_START', 'STATE_UPDATE', 'STATE_END']
 
     def on_init(self, controller):
@@ -32,7 +31,7 @@ class SampleListener(Leap.Listener):
         print "Exited"
 
     def write(self, n, vector):
-        directory = '/Users/raychen/Library/Preferences/Autodesk/maya/2015-x64/prefs/scriptEditorTemp/'
+        directory = '/Users/wenlongx/Library/Preferences/Autodesk/maya/2015-x64/prefs/scriptEditorTemp/'
 
         if os.path.isdir(directory):
             self.fi = open(directory +'command.py', 'w')
@@ -83,13 +82,14 @@ class SampleListener(Leap.Listener):
             if hand.pinch_strength > 0.95:
                 if not self.translating:
                     self.translating = True
-                    self.init_pos = [bone.next_joint[0], bone.next_joint[1], bone.next_joint[2]]
+                    self.last_pos = [bone.next_joint[0], bone.next_joint[1], bone.next_joint[2]]
             else:
                 self.translating = False
 
             if self.translating and not written:
                 end = [bone.next_joint[0], bone.next_joint[1], bone.next_joint[2]]
-                temp = [end[0] - self.init_pos[0], end[1] - self.init_pos[1], end[2] - self.init_pos[2]]
+                temp = [end[0] - self.last_pos[0], end[1] - self.last_pos[1], end[2] - self.last_pos[2]]
+                self.last_pos = end
                 self.write(1, temp)
                 written = True
 
@@ -254,22 +254,23 @@ class SampleListener(Leap.Listener):
             if hand1.pinch_strength > 0.95 and hand2.pinch_strength > 0.95:
                 if not self.scaling:
                     self.scaling = True
-                    self.init_size = [bone1.next_joint[0] - bone2.next_joint[0], bone1.next_joint[1] - bone2.next_joint[1], bone1.next_joint[2] - bone2.next_joint[2]]
+                    self.last_size = [bone1.next_joint[0] - bone2.next_joint[0], bone1.next_joint[1] - bone2.next_joint[1], bone1.next_joint[2] - bone2.next_joint[2]]
             else:
                 self.scaling = False
 
             for axis in range(0, 3):
-                if abs(self.init_size[self.scaling_axis]) < abs(self.init_size[axis]):
+                if abs(self.last_size[self.scaling_axis]) < abs(self.last_size[axis]):
                     self.scaling_axis = axis
 
             #Writing
             if self.scaling and not written:
                 end = [bone1.next_joint[0] - bone2.next_joint[0], bone1.next_joint[1] - bone2.next_joint[1], bone1.next_joint[2] - bone2.next_joint[2]]
-                temp = [end[0] - self.init_size[0], end[1] - self.init_size[1], end[2] - self.init_size[2]]
+                temp = [end[0] - self.last_size[0], end[1] - self.last_size[1], end[2] - self.last_size[2]]
                 for axis in range(0, 3):
                     if self.scaling_axis != axis:
                         temp[axis] = 0
                 self.write(3, temp)
+                last_size = end
                 written = True
             elif not written:
                 self.write(0, [0, 0, 0])
