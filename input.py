@@ -1,4 +1,4 @@
-import Leap, sys, thread, time, math
+import Leap, sys, thread, time, math, os
 
 from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
 
@@ -29,40 +29,44 @@ class SampleListener(Leap.Listener):
         print "Exited"
 
     def write(self, n, vector):
-        self.fi = open('~/Library/Preferences/Autodesk/maya/2015-x64/prefs/scriptEditorTemp/command.py', 'w')
-        # self.fi = open('command.py', 'w')
-        
-        self.fi.write("c_type = %s\npVec = %o \n" % (vector, n))
-        self.fi.write("import maya.cmds as cmds\n")
-        self.fi.write("import maya.mel as mel\n")
-        self.fi.write("import time\n")
-        self.fi.write("def scalar_maker(c_type):\n")
-        self.fi.write("    if (c_type == 1):\n")
-        self.fi.write("        # TRANSLATE SCALAR\n")
-        self.fi.write("        return 1\n")
-        self.fi.write("    elif (c_type == 2):\n")
-        self.fi.write("        # ROTATE SCALAR\n")
-        self.fi.write("        return 1\n")
-        self.fi.write("    elif (c_type == 3):\n")
-        self.fi.write("        # SCALE SCALAR\n")
-        self.fi.write("        return 1\n")
-        self.fi.write("    else:\n")
-        self.fi.write("        print 'ERROR: cmd not found %d' % c_type \n")
-        self.fi.write("        return 1\n")
-        self.fi.write("def command(c_type, pVec):\n")
-        self.fi.write("    k = scalar_maker(c_type)\n")
-        self.fi.write("    if c_type == 1:\n")
-        self.fi.write("        cmds.move(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)\n")
-        self.fi.write("    elif c_type == 2:\n")
-        self.fi.write("        cmds.rotate(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)\n")
-        self.fi.write("    elif c_type == 3:\n")
-        self.fi.write("        cmds.scale(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)\n")
-        self.fi.write("for i in range(0,100):\n")
-        self.fi.write("    command(c_type, pVec)\n")
-        self.fi.write("    time.sleep(0.02)\n")
-        self.fi.write("    mel.eval('refresh -f')\n")
-        self.fi.close
-        print vector
+        directory = '/Users/raychen/Library/Preferences/Autodesk/maya/2015-x64/prefs/scriptEditorTemp/'
+
+        if os.path.isdir(directory):
+            self.fi = open(directory +'command.py', 'w')
+            
+            self.fi.write("c_type = %d\npVec = %s \n" % (n, vector))
+            self.fi.write("import maya.cmds as cmds\n")
+            self.fi.write("import maya.mel as mel\n")
+            self.fi.write("import time\n")
+            self.fi.write("def scalar_maker(c_type):\n")
+            self.fi.write("    if (c_type == 1):\n")
+            self.fi.write("        # TRANSLATE SCALAR\n")
+            self.fi.write("        return 1\n")
+            self.fi.write("    elif (c_type == 2):\n")
+            self.fi.write("        # ROTATE SCALAR\n")
+            self.fi.write("        return 1\n")
+            self.fi.write("    elif (c_type == 3):\n")
+            self.fi.write("        # SCALE SCALAR\n")
+            self.fi.write("        return 1\n")
+            self.fi.write("    else:\n")
+            self.fi.write("        print 'ERROR: cmd not found %d' % c_type \n")
+            self.fi.write("        return 1\n")
+            self.fi.write("def command(c_type, pVec):\n")
+            self.fi.write("    k = scalar_maker(c_type)\n")
+            self.fi.write("    if c_type == 1:\n")
+            self.fi.write("        cmds.move(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)\n")
+            self.fi.write("    elif c_type == 2:\n")
+            self.fi.write("        cmds.rotate(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)\n")
+            self.fi.write("    elif c_type == 3:\n")
+            self.fi.write("        cmds.scale(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)\n")
+            self.fi.write("for i in range(0,100):\n")
+            self.fi.write("    command(c_type, pVec)\n")
+            self.fi.write("    time.sleep(0.02)\n")
+            self.fi.write("    mel.eval('refresh -f')\n")
+            self.fi.close
+            print vector
+        else:
+            print "directory does not exist"
 
 
     def on_frame(self, controller):
