@@ -36,7 +36,7 @@ class SampleListener(Leap.Listener):
             
             self.fi.write("c_type = %d\npVec = %s \n" % (n, vector))
             self.fi.write("import maya.cmds as cmds\n")
-            self.fi.write("import maya.mel as mel\n")
+            # self.fi.write("import maya.mel as mel\n")
             self.fi.write("import time\n")
             self.fi.write("def scalar_maker(c_type):\n")
             self.fi.write("    if (c_type == 1):\n")
@@ -59,10 +59,6 @@ class SampleListener(Leap.Listener):
             self.fi.write("        cmds.rotate(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)\n")
             self.fi.write("    elif c_type == 3:\n")
             self.fi.write("        cmds.scale(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)\n")
-            self.fi.write("for i in range(0,100):\n")
-            self.fi.write("    command(c_type, pVec)\n")
-            self.fi.write("    time.sleep(0.02)\n")
-            self.fi.write("    mel.eval('refresh -f')\n")
             self.fi.close
             print vector
         else:
@@ -73,6 +69,8 @@ class SampleListener(Leap.Listener):
         frame = controller.frame()
         swept_angles = []
 
+        written = False
+        print self.counter
         if len(frame.hands) == 1:
             hand = frame.hands[0]
             finger = hand.fingers[0]
@@ -85,10 +83,11 @@ class SampleListener(Leap.Listener):
             else:
                 self.translating = False
 
-            if self.translating:
+            if self.translating and not written:
                 end = [bone.next_joint[0], bone.next_joint[1], bone.next_joint[2]]
                 temp = [end[0] - self.init_pos[0], end[1] - self.init_pos[1], end[2] - self.init_pos[2]]
                 self.write(1, temp)
+                written = True
 
             # swipes[l,r,u,d]
             swipes = [0,0,0,0]
@@ -186,8 +185,12 @@ class SampleListener(Leap.Listener):
                 else:
                     vector[axis] = 0
 
-            if sum(vector) != 0:
+            if sum(vector) != 0 and not written:
                 self.write(2, vector)
+                written = True
+            elif not written:
+                self.write(0, [0, 0, 0])
+                written = True
 
         elif len(frame.hands) == 2:
             hand1 = frame.hands[0]
@@ -250,12 +253,20 @@ class SampleListener(Leap.Listener):
             else:
                 self.scaling = False
 
-            if self.scaling:
+            #Writing
+            if self.scaling and not written:
                 end = [bone1.next_joint[0] - bone2.next_joint[0], bone1.next_joint[1] - bone2.next_joint[1], bone1.next_joint[2] - bone2.next_joint[2]]
                 temp = [end[0] - self.init_size[0], end[1] - self.init_size[1], end[2] - self.init_size[2]]
                 self.write(3, temp)
+                written = True
+            elif not written:
+                self.write(0, [0, 0, 0])
+                written = True
 
-        #Sleep for 100 milliseconds
+        elif not written:
+            self.write(0, [0, 0, 0])
+            written = True
+        
         time.sleep(0.10)
 
     def state_string(self, state):
