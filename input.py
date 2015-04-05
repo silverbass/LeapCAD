@@ -85,7 +85,7 @@ class SampleListener(Leap.Listener, myo.DeviceListener):
             self.fi.write("    elif c_type == 2:\n")
             self.fi.write("        cmds.rotate(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)\n")
             self.fi.write("    elif c_type == 3:\n")
-            self.fi.write("        cmds.scale(k*pVec[0] + 1, k*pVec[1] + 1, k*pVec[2] + 1, relative=True)\n")
+            self.fi.write("        cmds.scale(k*pVec[0] + 1, k*pVec[1] + 1, k*pVec[2] + 1, absolute=True, centerPivot=True)\n")
             # self.fi.write("def __init__():\n")
             # self.fi.write("    pass")
             self.fi.close
@@ -213,6 +213,11 @@ class SampleListener(Leap.Listener, myo.DeviceListener):
             has_ball = False
             has_cube = False
             swipes = [0,0,0,0]
+
+            if hand1.grab_strength < .1 or hand2.grab_strength < .1:
+                has_cube = True
+            if hand1.grab_strength > .9 or hand2.grab_strength > .9:
+                has_ball = True
 
             for gesture in frame.gestures():
                 if gesture.type == Leap.Gesture.TYPE_SWIPE:
