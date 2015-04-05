@@ -1,6 +1,8 @@
 c_type = 1
-pVec = [0,10,0]
+pVec = [0,.1,0]
 # ^ you replace these two lines with your vector and type of transformation
+#this needs to be saved to
+#/Users/raychen/Library/Preferences/Autodesk/maya/2015-x64/prefs/scriptEditorTemp
 
 import maya.cmds as cmds
 import maya.mel as mel
@@ -30,7 +32,6 @@ def command(c_type, pVec):
         cmds.scale(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)
 
 for i in range(0,100):
-    p = [pVec[0]/100.0, pVec[1]/100.0, pVec[2]/100.0] 
     command(c_type, pVec)
     time.sleep(0.02)
     mel.eval("refresh -f")
