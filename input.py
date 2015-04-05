@@ -86,6 +86,12 @@ class SampleListener(Leap.Listener, myo.DeviceListener):
             self.fi.write("        cmds.rotate(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)\n")
             self.fi.write("    elif c_type == 3:\n")
             self.fi.write("        cmds.scale(k*pVec[0] + 1, k*pVec[1] + 1, k*pVec[2] + 1, relative=True)\n")
+            self.fi.write("    elif c_type == 4:\n")
+            self.fi.write("        cmds.polyCube(sx=8, sy=8, sz=8, w=16, h=16, d=16)\n")
+            self.fi.write("    elif c_type == 5:\n")
+            self.fi.write("        cmds.polyTorus(sx=32, sy=16, r=10, sr=4)\n")
+            self.fi.write("    elif c_type == 6:\n")
+            self.fi.write("        cmds.delete()")
             # self.fi.write("def __init__():\n")
             # self.fi.write("    pass")
             self.fi.close
