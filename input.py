@@ -3,9 +3,12 @@ import Leap, sys, thread, time, math, os
 from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
 
 class SampleListener(Leap.Listener):
+    FPS = 20
     fi = None
     translating = False
+    trans_axis = 0
     scaling = False
+    scaling_axis = 0
     rotating = False
     init_pos = [0, 0, 0]
     init_size = [0, 0, 0]
@@ -41,13 +44,13 @@ class SampleListener(Leap.Listener):
             self.fi.write("def scalar_maker(c_type):\n")
             self.fi.write("    if (c_type == 1):\n")
             self.fi.write("        # TRANSLATE SCALAR\n")
-            self.fi.write("        return 1\n")
+            self.fi.write("        return .01\n")
             self.fi.write("    elif (c_type == 2):\n")
             self.fi.write("        # ROTATE SCALAR\n")
             self.fi.write("        return 1\n")
             self.fi.write("    elif (c_type == 3):\n")
             self.fi.write("        # SCALE SCALAR\n")
-            self.fi.write("        return 1\n")
+            self.fi.write("        return .0001\n")
             self.fi.write("    else:\n")
             self.fi.write("        print 'ERROR: cmd not found %d' % c_type \n")
             self.fi.write("        return 1\n")
@@ -59,6 +62,8 @@ class SampleListener(Leap.Listener):
             self.fi.write("        cmds.rotate(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)\n")
             self.fi.write("    elif c_type == 3:\n")
             self.fi.write("        cmds.scale(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)\n")
+            # self.fi.write("def __init__():\n")
+            # self.fi.write("    pass")
             self.fi.close
             print vector
         else:
@@ -70,7 +75,6 @@ class SampleListener(Leap.Listener):
         swept_angles = []
 
         written = False
-        print self.counter
         if len(frame.hands) == 1:
             hand = frame.hands[0]
             finger = hand.fingers[0]
@@ -86,6 +90,14 @@ class SampleListener(Leap.Listener):
             if self.translating and not written:
                 end = [bone.next_joint[0], bone.next_joint[1], bone.next_joint[2]]
                 temp = [end[0] - self.init_pos[0], end[1] - self.init_pos[1], end[2] - self.init_pos[2]]
+                self.scaling_axis = 0
+                for axis in range(0, 3):
+                    if abs(temp[self.scaling_axis]) < abs(temp[axis]):
+                        self.scaling_axis = axis
+                for axis in range(0, 3):
+                    if axis != self.scaling_axis:
+                        temp[axis] = 0
+
                 self.write(1, temp)
                 written = True
 
@@ -253,10 +265,17 @@ class SampleListener(Leap.Listener):
             else:
                 self.scaling = False
 
+            for axis in range(0, 3):
+                if abs(self.init_size[self.scaling_axis]) < abs(self.init_size[axis]):
+                    self.scaling_axis = axis
+
             #Writing
             if self.scaling and not written:
                 end = [bone1.next_joint[0] - bone2.next_joint[0], bone1.next_joint[1] - bone2.next_joint[1], bone1.next_joint[2] - bone2.next_joint[2]]
-                temp = [end[0] - self.init_size[0], end[1] - self.init_size[1], end[2] - self.init_size[2]]
+                temp = [(end[0] - self.init_size[0])/self.init_size[0], (end[1] - self.init_size[1])/self.init_size[0], (end[2] - self.init_size[2])/self.init_size[0]]
+                for axis in range(0, 3):
+                    if self.scaling_axis != axis:
+                        temp[axis] = 0
                 self.write(3, temp)
                 written = True
             elif not written:
@@ -267,7 +286,7 @@ class SampleListener(Leap.Listener):
             self.write(0, [0, 0, 0])
             written = True
         
-        time.sleep(0.10)
+        time.sleep(1.0/self.FPS)
 
     def state_string(self, state):
         if state == Leap.Gesture.STATE_START:
