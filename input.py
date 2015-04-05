@@ -1,7 +1,8 @@
-import Leap, myo, sys, thread, time, math, os
+import sys, thread, time, math, os
 sys.path.append(os.path.join("~/Documents/Design/Hackathons/LAHacks/LeapCAD"))
-
+import Leap
 from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
+import myo
 from myo.lowlevel import pose_t, stream_emg
 from myo.six import print_
 import random 
@@ -22,46 +23,11 @@ class Listener(myo.DeviceListener):
         myo.vibrate('short')
         myo.request_rssi()
 
-    # def on_rssi(self, myo, timestamp, rssi):
-    #     print_("RSSI:", rssi)
-
-    def on_event(self, event):
-        r""" Called before any of the event callbacks. """
-
-    def on_event_finished(self, event):
-        r""" Called after the respective event callbacks have been
-        invoked. This method is *always* triggered, even if one of
-        the callbacks requested the stop of the Hub. """
-
-    def on_pair(self, myo, timestamp):
-        print_('Paired')
-        print_("If you don't see any responses to your movements, try re-running the program or making sure the Myo works with Myo Connect (from Thalmic Labs).")
-        print_("Double tap enables EMG.")
-        print_("Spreading fingers disables EMG.\n")
-
-    def on_disconnect(self, myo, timestamp):
-        print_('on_disconnect')
 
     def on_pose(self, myo, timestamp, pose):
         print_('on_pose', pose)
-        # if pose == pose_t.double_tap:
-        #     print_("Enabling EMG")
-        #     print_("Spreading fingers disables EMG.")
-        #     print_("=" * 80)
-        #     myo.set_stream_emg(stream_emg.enabled)
-        # elif pose == pose_t.fingers_spread:
-        #     print_("=" * 80)
-        #     print_("Disabling EMG")
-        #     myo.set_stream_emg(stream_emg.disabled)
-
-    # def on_orientation_data(self, myo, timestamp, orientation):
-    #     show_output('orientation', orientation)
-
-    # def on_accelerometor_data(self, myo, timestamp, acceleration):
-    #     show_output('acceleration', acceleration)
-
-    # def on_gyroscope_data(self, myo, timestamp, gyroscope):
-    #     show_output('gyroscope', gyroscope)
+        if pose == pose_t.fist:
+            print "FIST"
 
     def on_unlock(self, myo, timestamp):
         print_('unlocked')
@@ -72,11 +38,6 @@ class Listener(myo.DeviceListener):
     def on_sync(self, myo, timestamp, arm, x_direction):
         print_('synced', arm, x_direction)
 
-    def on_unsync(self, myo, timestamp):
-        print_('unsynced')
-        
-    # def on_emg(self, myo, timestamp, emg):
-    #     show_output('emg', emg)
 
 class SampleListener(Leap.Listener):
     FPS = 50
@@ -372,15 +333,22 @@ class SampleListener(Leap.Listener):
             return "STATE_INVALID"
 
 def main():
+    hub = myo.Hub()
+    hub.set_locking_policy(myo.locking_policy.none)
+    hub.run(1000, Listener())
+
     listener = SampleListener()
     controller = Leap.Controller()
     controller.add_listener(listener)
 
     print "Press Enter to quit..."
     try:
-        sys.stdin.readline()
+        while hub.running:
+            myo.time.sleep(0.2)
+            sys.stdin.readline()
     except KeyboardInterrupt:
-        pass
+        print_("Quitting ...")
+        hub.stop(True)
     finally:
         controller.remove_listener(listener)
 
