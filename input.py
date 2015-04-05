@@ -3,7 +3,7 @@ import Leap, sys, thread, time, math, os
 from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
 
 class SampleListener(Leap.Listener):
-    FPS = 20
+    FPS = 30
     fi = None
     translating = False
     trans_axis = 0
@@ -44,13 +44,13 @@ class SampleListener(Leap.Listener):
             self.fi.write("def scalar_maker(c_type):\n")
             self.fi.write("    if (c_type == 1):\n")
             self.fi.write("        # TRANSLATE SCALAR\n")
-            self.fi.write("        return .01\n")
+            self.fi.write("        return .005\n")
             self.fi.write("    elif (c_type == 2):\n")
             self.fi.write("        # ROTATE SCALAR\n")
-            self.fi.write("        return 1\n")
+            self.fi.write("        return .5\n")
             self.fi.write("    elif (c_type == 3):\n")
             self.fi.write("        # SCALE SCALAR\n")
-            self.fi.write("        return .0001\n")
+            self.fi.write("        return .001\n")
             self.fi.write("    else:\n")
             self.fi.write("        print 'ERROR: cmd not found %d' % c_type \n")
             self.fi.write("        return 1\n")
@@ -61,11 +61,11 @@ class SampleListener(Leap.Listener):
             self.fi.write("    elif c_type == 2:\n")
             self.fi.write("        cmds.rotate(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)\n")
             self.fi.write("    elif c_type == 3:\n")
-            self.fi.write("        cmds.scale(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)\n")
+            self.fi.write("        cmds.scale(k*pVec[0] + 1, k*pVec[1] + 1, k*pVec[2] + 1, relative=True)\n")
             # self.fi.write("def __init__():\n")
             # self.fi.write("    pass")
             self.fi.close
-            print vector
+            print "c_type = %d\npVec = %s \n" % (n, vector)
         else:
             print "directory does not exist"
 
@@ -90,14 +90,6 @@ class SampleListener(Leap.Listener):
             if self.translating and not written:
                 end = [bone.next_joint[0], bone.next_joint[1], bone.next_joint[2]]
                 temp = [end[0] - self.init_pos[0], end[1] - self.init_pos[1], end[2] - self.init_pos[2]]
-                self.scaling_axis = 0
-                for axis in range(0, 3):
-                    if abs(temp[self.scaling_axis]) < abs(temp[axis]):
-                        self.scaling_axis = axis
-                for axis in range(0, 3):
-                    if axis != self.scaling_axis:
-                        temp[axis] = 0
-
                 self.write(1, temp)
                 written = True
 
@@ -105,15 +97,16 @@ class SampleListener(Leap.Listener):
             swipes = [0,0,0,0]
             
             normals = []
+            clockwiseness = 1
+
             for gesture in frame.gestures():
                 if gesture.type == Leap.Gesture.TYPE_CIRCLE:
                     circle = CircleGesture(gesture)
-
                     # Determine clock direction using the angle between the pointable and the circle normal
                     if circle.pointable.direction.angle_to(circle.normal) <= Leap.PI/2:
-                        clockwiseness = "clockwise"
+                        clockwiseness = -1
                     else:
-                        clockwiseness = "counterclockwise"
+                        clockwiseness = 1
 
                     normals = normals + [circle.normal]
                     # Calculate the angle swept since the last frame
@@ -193,7 +186,7 @@ class SampleListener(Leap.Listener):
 
             for axis in range(0, 3):
                 if axis == working_axis:
-                    vector[axis] = avg_swept_angle
+                    vector[axis] = clockwiseness * avg_swept_angle
                 else:
                     vector[axis] = 0
 
@@ -272,7 +265,7 @@ class SampleListener(Leap.Listener):
             #Writing
             if self.scaling and not written:
                 end = [bone1.next_joint[0] - bone2.next_joint[0], bone1.next_joint[1] - bone2.next_joint[1], bone1.next_joint[2] - bone2.next_joint[2]]
-                temp = [(end[0] - self.init_size[0])/self.init_size[0], (end[1] - self.init_size[1])/self.init_size[0], (end[2] - self.init_size[2])/self.init_size[0]]
+                temp = [end[0] - self.init_size[0], end[1] - self.init_size[1], end[2] - self.init_size[2]]
                 for axis in range(0, 3):
                     if self.scaling_axis != axis:
                         temp[axis] = 0
