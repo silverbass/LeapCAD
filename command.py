@@ -35,6 +35,7 @@ def command(c_type, pVec):
         cmds.polyCube(sx=8, sy=8, sz=8, w=16, h=16, d=16)
     elif c_type == 5:
         cmds.polyTorus(sx=32, sy=16, r=10, sr=4)
+    elif c_type == 6:
+        cmds.delete()
+        #deletes selected item
 
-command(c_type, pVec)
-mel.eval("refresh -f")
