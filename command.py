@@ -1,8 +1,6 @@
 c_type = 1
-pVec = [0,.1,0]
+pVec = [0,1,0]
 # ^ you replace these two lines with your vector and type of transformation
-#this needs to be saved to
-#/Users/raychen/Library/Preferences/Autodesk/maya/2015-x64/prefs/scriptEditorTemp
 
 import maya.cmds as cmds
 import maya.mel as mel
@@ -20,7 +18,7 @@ def scalarMaker(c_type):
         return 1
     else:
         print "ERROR: cmd not found %d" % c_type 
-        return 1
+        return 0
 
 def command(c_type, pVec):
     k = scalarMaker(c_type)
@@ -31,7 +29,5 @@ def command(c_type, pVec):
     elif c_type == 3:
         cmds.scale(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)
 
-for i in range(0,100):
-    command(c_type, pVec)
-    time.sleep(0.02)
-    mel.eval("refresh -f")
+command(c_type, pVec)
+mel.eval("refresh -f")
