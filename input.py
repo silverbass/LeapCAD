@@ -9,9 +9,11 @@ from myo.six import print_
 import random 
 
 class SampleListener(Leap.Listener, myo.DeviceListener):
+    empty = True
+    debugging = False
     fi = None
     fist = False
-    FPS = 100
+    FPS = 20
     translating = False
     trans_axis = 0
     scaling = False
@@ -57,7 +59,6 @@ class SampleListener(Leap.Listener, myo.DeviceListener):
 
     def write(self, n, vector):
         directory = '/Users/raychen/Library/Preferences/Autodesk/maya/2015-x64/prefs/scriptEditorTemp/'
-
         if os.path.isdir(directory):
             self.fi = open(directory +'command.py', 'w')
             
@@ -68,13 +69,13 @@ class SampleListener(Leap.Listener, myo.DeviceListener):
             self.fi.write("def scalar_maker(c_type):\n")
             self.fi.write("    if (c_type == 1):\n")
             self.fi.write("        # TRANSLATE SCALAR\n")
-            self.fi.write("        return .03\n")
+            self.fi.write("        return .08\n")
             self.fi.write("    elif (c_type == 2):\n")
             self.fi.write("        # ROTATE SCALAR\n")
-            self.fi.write("        return .1\n")
+            self.fi.write("        return .2\n")
             self.fi.write("    elif (c_type == 3):\n")
             self.fi.write("        # SCALE SCALAR\n")
-            self.fi.write("        return .0001\n")
+            self.fi.write("        return .1\n")
             self.fi.write("    else:\n")
             self.fi.write("        print 'ERROR: cmd not found %d' % c_type \n")
             self.fi.write("        return 1\n")
@@ -85,18 +86,19 @@ class SampleListener(Leap.Listener, myo.DeviceListener):
             self.fi.write("    elif c_type == 2:\n")
             self.fi.write("        cmds.rotate(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)\n")
             self.fi.write("    elif c_type == 3:\n")
-            self.fi.write("        cmds.scale(k*pVec[0] + 1, k*pVec[1] + 1, k*pVec[2] + 1, absolute=True, centerPivot=True)\n")
-            self.fi.write("    elif c_type == 4:\n")
-            self.fi.write("        cmds.polyCube(sx=8, sy=8, sz=8, w=16, h=16, d=16)\n")
+            self.fi.write("        cmds.scale(1 + k*pVec[0], 1 + k*pVec[1], 1 + k*pVec[2], absolute=True, centerPivot=False)\n")
             self.fi.write("    elif c_type == 5:\n")
+            self.fi.write("        cmds.polyCube(sx=8, sy=8, sz=8, w=16, h=16, d=16)\n")
+            self.fi.write("    elif c_type == 4:\n")
             self.fi.write("        cmds.polyTorus(sx=32, sy=16, r=10, sr=4)\n")
             self.fi.write("    elif c_type == 6:\n")
+            self.fi.write("        cmds.select(all=True)\n")
             self.fi.write("        cmds.delete()")
             # self.fi.write("def __init__():\n")
             # self.fi.write("    pass")
             self.fi.close
-            print self.fist
-            print "c_type = %d\npVec = %s \n" % (n, vector)
+            if self.debugging:
+                print "%d & %s" % (n, vector)
         else:
             print "directory does not exist"
 
@@ -131,6 +133,10 @@ class SampleListener(Leap.Listener, myo.DeviceListener):
             
             normals = []
             clockwiseness = 1
+
+            create_cube = False
+            create_ball = False
+            clear = False
 
             for gesture in frame.gestures():
                 if gesture.type == Leap.Gesture.TYPE_CIRCLE:
@@ -168,14 +174,18 @@ class SampleListener(Leap.Listener, myo.DeviceListener):
                     elif( (abs(dy) > abs(3*dx)) and (abs(dy) > abs(3*dz)) and dy < 0):
                         swipes[3]+= 1
 
-                    if swipes[0] > 3:
-                        print "Swiped Left"
-                    if swipes[1] > 3:
-                        print "Tinder"
-                    if swipes[2] > 3:
-                        print "Save"
-                    if swipes[3] > 3:
-                        print "Menu"
+            # if swipes[0] > 2 and not create_cube:
+            #     create_cube = True
+            #     self.write(4, [])
+            # if swipes[1] > 2 and not create_ball:
+            #     create_ball = True
+            #     self.write(5, [])
+            if swipes[2] > 2 and not clear:
+                clear = True
+                self.write(6, [])
+            if swipes[3] > 2 and not clear:
+                clear = True
+                self.write(6, [])
 
             vector = [0, 0, 0]
             for index in range(0, len(normals)):
@@ -217,12 +227,12 @@ class SampleListener(Leap.Listener, myo.DeviceListener):
             bone2 = finger2.bone(3)
             
             has_ball = False
-            has_cube = False
+            has_torus = False
             swipes = [0,0,0,0]
 
-            if hand1.grab_strength < .1 or hand2.grab_strength < .1:
-                has_cube = True
-            if hand1.grab_strength > .9 or hand2.grab_strength > .9:
+            if hand1.pinch_strength > 0.90 or hand2.pinch_strength > 0.90:
+                has_torus = True
+            if hand1.pinch_strength < 0.10 or hand2.pinch_strength < 0.10:
                 has_ball = True
 
             for gesture in frame.gestures():
@@ -244,42 +254,41 @@ class SampleListener(Leap.Listener, myo.DeviceListener):
                     elif( (abs(dy) > abs(3*dx)) and (abs(dy) > abs(3*dz)) and dy < 0):
                         swipes[3]+= 1
 
-                    if swipes[0] > 3:
-                        print "Swiped Left"
-                    if swipes[1] > 3:
-                        print "Tinder"
-                    if swipes[2] > 3:
-                        print "Save"
-                    if swipes[3] > 6:
-                        print "Delete"
+                    # if swipes[0] > 3:
+                    #     print "Swiped Left"
+                    # if swipes[1] > 3:
+                    #     print "Tinder"
+                    # if swipes[2] > 3:
+                    #     print "Save"
+                    # if swipes[3] > 6:
+                    #     print "Delete"
+                    #     
 
-                if gesture.type == Leap.Gesture.TYPE_KEY_TAP:
-                    keytap = KeyTapGesture(gesture)
-                    if has_ball:
-                        self.write(4, [])
-                    elif has_cube:
-                        self.write(5, [])
+                # if gesture.type == Leap.Gesture.TYPE_KEY_TAP or gesture.type == Leap.Gesture.TYPE_SCREEN_TAP:
+                #     print "TAP TAP MUDAFUKKAAA"
+                #     if has_ball:
+                #         self.write(5, [])
+                #     if has_torus:
+                #         self.write(4, [])
 
             if hand1.pinch_strength > 0.95 and hand2.pinch_strength > 0.95 and not self.fist:
                 if not self.scaling:
                     self.scaling = True
                     self.last_size = [abs(bone1.next_joint[0] - bone2.next_joint[0]), abs(bone1.next_joint[1] - bone2.next_joint[1]), abs(bone1.next_joint[2] - bone2.next_joint[2])]
+                    print "last_size"
+                    print self.last_size
             else:
                 self.scaling = False
+                self.last_size = [0, 0, 0]
 
-            for axis in range(0, 3):
-                if abs(self.last_size[self.scaling_axis]) < abs(self.last_size[axis]):
-                    self.scaling_axis = axis
-
-            #Writing
             if self.scaling and not written:
                 end = [abs(bone1.next_joint[0] - bone2.next_joint[0]), abs(bone1.next_joint[1] - bone2.next_joint[1]), abs(bone1.next_joint[2] - bone2.next_joint[2])]
                 temp = [end[0] - self.last_size[0], end[1] - self.last_size[1], end[2] - self.last_size[2]]
-                for axis in range(0, 3):
-                    if self.scaling_axis != axis:
-                        temp[axis] = 0
-                self.write(3, temp)
-                last_size = end
+                
+                print (int)(100 * temp[0])
+                duuuh = sum(temp)/3
+                self.write(3, [duuuh, duuuh, duuuh])
+                self.last_size = end
                 written = True
             elif not written:
                 self.write(0, [0, 0, 0])
