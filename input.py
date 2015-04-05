@@ -1,4 +1,4 @@
-import Leap, sys, thread, time, math, command
+import Leap, sys, thread, time, math
 
 from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
 
@@ -10,8 +10,6 @@ class SampleListener(Leap.Listener):
     init_pos = [0, 0, 0]
     init_size = [0, 0, 0]
     initial_angle = [0, 0, 0]
-    finger_names = ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky']
-    bone_names = ['Metacarpal', 'Proximal', 'Intermediate', 'Distal']
     state_names = ['STATE_INVALID', 'STATE_START', 'STATE_UPDATE', 'STATE_END']
 
     def on_init(self, controller):
@@ -31,8 +29,41 @@ class SampleListener(Leap.Listener):
         print "Exited"
 
     def write(self, n, vector):
-        self.fi = open('line.py', 'w')
-        self.fi.write("c_type = " + n + "\npVec = " + vector)
+        self.fi = open('~/Library/Preferences/Autodesk/maya/2015-x64/prefs/scriptEditorTemp/line.py', 'w')
+        file_string = "c_type = " + n + "\npVec = " + vector
+        file_string += "# ^ you replace these two lines with your vector and type of transformation"
+        file_string += "#this needs to be saved to"
+        file_string += "#/Users/raychen/Library/Preferences/Autodesk/maya/2015-x64/prefs/scriptEditorTemp"
+        file_string += "import maya.cmds as cmds"
+        file_string += "import maya.mel as mel"
+        file_string += "import time"
+        file_string += "def scalarMaker(c_type):"
+        file_string += "    if (c_type == 1):"
+        file_string += "        # TRANSLATE SCALAR"
+        file_string += "        return 1"
+        file_string += "    elif (c_type == 2):"
+        file_string += "        # ROTATE SCALAR"
+        file_string += "        return 1"
+        file_string += "    elif (c_type == 3):"
+        file_string += "        # SCALE SCALAR"
+        file_string += "        return 1"
+        file_string += "    else:"
+        file_string += "        print 'ERROR: cmd not found %d' % c_type "
+        file_string += "        return 1"
+        file_string += "def command(c_type, pVec):"
+        file_string += "    k = scalarMaker(c_type)"
+        file_string += "    if c_type == 1:"
+        file_string += "        cmds.move(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)"
+        file_string += "    elif c_type == 2:"
+        file_string += "        cmds.rotate(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)"
+        file_string += "    elif c_type == 3:"
+        file_string += "        cmds.scale(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)"
+        file_string += "for i in range(0,100):"
+        file_string += "    command(c_type, pVec)"
+        file_string += "    time.sleep(0.02)"
+        file_string += "    mel.eval('refresh -f')"
+
+        self.fi.write(file_string)
         print "c_type = " + n + "\npVec = " + vector
         self.fi.close
 
