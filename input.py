@@ -2,20 +2,13 @@ import sys, thread, time, math, os
 sys.path.append(os.path.join("~/Documents/Design/Hackathons/LAHacks/LeapCAD"))
 import Leap
 from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
+sys.path.append(os.path.join("~/Documents/Design/Hackathons/LAHacks/LeapCAD/myo-python/sdk/myo.framework"))
 import myo
 from myo.lowlevel import pose_t, stream_emg
 from myo.six import print_
 import random 
 
-myo.init()
-
-SHOW_OUTPUT_CHANCE = 0.01
-r"""
-There can be a lot of output from certain data like acceleration and orientation.
-This parameter controls the percent of times that data is shown.
-"""
-
-class Listener(myo.DeviceListener):
+class MyoListener(myo.DeviceListener):
     # return False from any method to stop the Hub
 
     def on_connect(self, myo, timestamp):
@@ -23,11 +16,12 @@ class Listener(myo.DeviceListener):
         myo.vibrate('short')
         myo.request_rssi()
 
-
     def on_pose(self, myo, timestamp, pose):
-        print_('on_pose', pose)
+        # print_('on_pose', pose)
         if pose == pose_t.fist:
             print "FIST"
+        else:
+            print "Not FIST"
 
     def on_unlock(self, myo, timestamp):
         print_('unlocked')
@@ -38,10 +32,8 @@ class Listener(myo.DeviceListener):
     def on_sync(self, myo, timestamp, arm, x_direction):
         print_('synced', arm, x_direction)
 
-
 class SampleListener(Leap.Listener):
     FPS = 50
-    fi = None
     translating = False
     trans_axis = 0
     scaling = False
@@ -68,7 +60,7 @@ class SampleListener(Leap.Listener):
         print "Exited"
 
     def write(self, n, vector):
-        directory = '/Users/wenlongx/Library/Preferences/Autodesk/maya/2015-x64/prefs/scriptEditorTemp/'
+        directory = '/Users/raychen/Library/Preferences/Autodesk/maya/2015-x64/prefs/scriptEditorTemp/'
 
         if os.path.isdir(directory):
             self.fi = open(directory +'command.py', 'w')
@@ -110,6 +102,7 @@ class SampleListener(Leap.Listener):
         frame = controller.frame()
         swept_angles = []
 
+        # print self.hub.pose
         written = False
         if len(frame.hands) == 1:
             hand = frame.hands[0]
@@ -318,6 +311,7 @@ class SampleListener(Leap.Listener):
             written = True
         
         time.sleep(1.0/self.FPS)
+        # myo.time.sleep(1/self.FPS)
 
     def state_string(self, state):
         if state == Leap.Gesture.STATE_START:
@@ -333,9 +327,10 @@ class SampleListener(Leap.Listener):
             return "STATE_INVALID"
 
 def main():
+    myo.init()
     hub = myo.Hub()
     hub.set_locking_policy(myo.locking_policy.none)
-    hub.run(1000, Listener())
+    hub.run(1000, MyoListener())
 
     listener = SampleListener()
     controller = Leap.Controller()
@@ -343,14 +338,13 @@ def main():
 
     print "Press Enter to quit..."
     try:
-        while hub.running:
-            myo.time.sleep(0.2)
-            sys.stdin.readline()
+        sys.stdin.readline()
     except KeyboardInterrupt:
-        print_("Quitting ...")
-        hub.stop(True)
+        pass
     finally:
         controller.remove_listener(listener)
+        print_("Quitting ...")
+        hub.stop(True)
 
 if __name__ == "__main__":
     main()
