@@ -29,43 +29,40 @@ class SampleListener(Leap.Listener):
         print "Exited"
 
     def write(self, n, vector):
-        self.fi = open('~/Library/Preferences/Autodesk/maya/2015-x64/prefs/scriptEditorTemp/line.py', 'w')
-        file_string = "c_type = " + n + "\npVec = " + vector
-        file_string += "# ^ you replace these two lines with your vector and type of transformation"
-        file_string += "#this needs to be saved to"
-        file_string += "#/Users/raychen/Library/Preferences/Autodesk/maya/2015-x64/prefs/scriptEditorTemp"
-        file_string += "import maya.cmds as cmds"
-        file_string += "import maya.mel as mel"
-        file_string += "import time"
-        file_string += "def scalarMaker(c_type):"
-        file_string += "    if (c_type == 1):"
-        file_string += "        # TRANSLATE SCALAR"
-        file_string += "        return 1"
-        file_string += "    elif (c_type == 2):"
-        file_string += "        # ROTATE SCALAR"
-        file_string += "        return 1"
-        file_string += "    elif (c_type == 3):"
-        file_string += "        # SCALE SCALAR"
-        file_string += "        return 1"
-        file_string += "    else:"
-        file_string += "        print 'ERROR: cmd not found %d' % c_type "
-        file_string += "        return 1"
-        file_string += "def command(c_type, pVec):"
-        file_string += "    k = scalarMaker(c_type)"
-        file_string += "    if c_type == 1:"
-        file_string += "        cmds.move(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)"
-        file_string += "    elif c_type == 2:"
-        file_string += "        cmds.rotate(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)"
-        file_string += "    elif c_type == 3:"
-        file_string += "        cmds.scale(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)"
-        file_string += "for i in range(0,100):"
-        file_string += "    command(c_type, pVec)"
-        file_string += "    time.sleep(0.02)"
-        file_string += "    mel.eval('refresh -f')"
-
-        self.fi.write(file_string)
-        print "c_type = " + n + "\npVec = " + vector
+        self.fi = open('~/Library/Preferences/Autodesk/maya/2015-x64/prefs/scriptEditorTemp/command.py', 'w')
+        # self.fi = open('command.py', 'w')
+        
+        self.fi.write("c_type = %s\npVec = %o \n" % (vector, n))
+        self.fi.write("import maya.cmds as cmds\n")
+        self.fi.write("import maya.mel as mel\n")
+        self.fi.write("import time\n")
+        self.fi.write("def scalar_maker(c_type):\n")
+        self.fi.write("    if (c_type == 1):\n")
+        self.fi.write("        # TRANSLATE SCALAR\n")
+        self.fi.write("        return 1\n")
+        self.fi.write("    elif (c_type == 2):\n")
+        self.fi.write("        # ROTATE SCALAR\n")
+        self.fi.write("        return 1\n")
+        self.fi.write("    elif (c_type == 3):\n")
+        self.fi.write("        # SCALE SCALAR\n")
+        self.fi.write("        return 1\n")
+        self.fi.write("    else:\n")
+        self.fi.write("        print 'ERROR: cmd not found %d' % c_type \n")
+        self.fi.write("        return 1\n")
+        self.fi.write("def command(c_type, pVec):\n")
+        self.fi.write("    k = scalar_maker(c_type)\n")
+        self.fi.write("    if c_type == 1:\n")
+        self.fi.write("        cmds.move(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)\n")
+        self.fi.write("    elif c_type == 2:\n")
+        self.fi.write("        cmds.rotate(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)\n")
+        self.fi.write("    elif c_type == 3:\n")
+        self.fi.write("        cmds.scale(k*pVec[0], k*pVec[1], k*pVec[2], relative=True)\n")
+        self.fi.write("for i in range(0,100):\n")
+        self.fi.write("    command(c_type, pVec)\n")
+        self.fi.write("    time.sleep(0.02)\n")
+        self.fi.write("    mel.eval('refresh -f')\n")
         self.fi.close
+        print vector
 
 
     def on_frame(self, controller):
